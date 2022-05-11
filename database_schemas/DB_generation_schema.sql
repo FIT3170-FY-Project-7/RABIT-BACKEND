@@ -14,7 +14,6 @@ DROP TABLE IF EXISTS corner_plot;
 DROP TABLE IF EXISTS parameter_config;
 SET FOREIGN_KEY_CHECKS = 1;
 
-
 -- Generate tables and set their primary keys as constraints
 
 CREATE TABLE rabit_user (
@@ -29,7 +28,7 @@ ALTER TABLE rabit_user ADD CONSTRAINT rabit_user_pk PRIMARY KEY ( user_id );
 CREATE TABLE upload (
     upload_id BINARY(16) NOT NULL,
     user_id BINARY(16) NOT NULL,
-    upload_datetime DATE
+    upload_datetime DATETIME
 );
 
 ALTER TABLE upload ADD CONSTRAINT upload_pk PRIMARY KEY (upload_id);
