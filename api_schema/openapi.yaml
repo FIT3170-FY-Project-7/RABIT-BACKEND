@@ -1,0 +1,146 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  version: 1.0.0
+servers:
+  - url: https://rabit2022.cloud.edu.au/api/v1
+    description: Main instance
+
+
+paths:
+  /users:
+    get:
+      summary: Returns a list of users.
+      responses:
+        '200':
+          description: A JSON array of user names
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: '#/components/schemas/User'
+  /users/{userId}:
+    get:
+      summary: Returns a user by ID.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to return.
+          schema:
+            type: string
+            format: uuid
+            minimum: 1
+      responses:
+        '200':
+          description: A user object
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/User'
+        '400': 
+          description: Invalid user ID format.
+        '404':
+          description: The specified user does not exist.
+  # Plots
+  /plots/{plotId}:
+    get:
+      summary: Returns a plot by ID.
+      parameters:
+      - name: plotId
+        in: path
+        required: true
+        description: The ID of the plot to return.
+        schema:
+          type: string
+          format: uuid
+          minimum: 1
+      responses:
+        '200':
+          description: A corner plot object
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/CornerPlot'
+        '400': 
+          description: Invalid plot ID format.
+        '404':
+          description: The specified plot does not exist.
+  
+                  
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        displayName:
+          type: string
+      required:  
+        - id
+        - username
+        - displayName
+    CornerPlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        locked:
+          type: boolean
+        paramaters:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parameter'
+    Parameter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        latexLabel:
+          type: string
+        unit:
+          type: string
+        domainMax:
+          type: number
+          format: double
+        domainMin:
+          type: number
+          format: double
+        hidden:
+          type: boolean
+        values:
+          type: array
+          items:
+            oneOf:
+              - type: number
+                format: double
+              - $ref: '#/components/schemas/Complex'
+    Complex:
+      type: object
+      properties:
+        real:
+          type: number
+          format: double
+        imag: 
+          type: number
+          format: double
+    
