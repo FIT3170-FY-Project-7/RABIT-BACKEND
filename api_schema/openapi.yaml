@@ -59,6 +59,15 @@ paths:
       summary: Add a new user.
       tags:
         - users
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to return.
+          schema:
+            type: string
+            format: uuid
+            minimum: 1
       requestBody:
         required: true
         content:
@@ -92,14 +101,15 @@ components:
           type: string
         displayName:
           type: string
-        plotCollections:
-          type: array
-          items:
-            $ref: '#/components/schemas/PlotCollection'
-        cornerPlots:
-          type: array
-          items:
-            $ref: '#/components/schemas/CornerPlot'
+        # FIXME: some attributes need to be excluded by default to avoid recursion
+        # plotCollections:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/PlotCollection'
+        # cornerPlots:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/CornerPlot'
       required:
         - id
         - username
