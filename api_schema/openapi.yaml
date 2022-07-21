@@ -1,29 +1,38 @@
 openapi: 3.0.0
 info:
-  title: Sample API
-  description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  title: RABIT API
+  description: REST API for RABIT.
   version: 1.0.0
 servers:
   - url: https://rabit2022.cloud.edu.au/api/v1
     description: Main instance
 
 
+tags:
+  - name: users
+    description: Operations on user accounts.
+
+
 paths:
   /users:
     get:
       summary: Returns a list of users.
+      tags:
+        - users
       responses:
         '200':
           description: A JSON array of user names
           content:
             application/json:
-              schema: 
+              schema:
                 type: array
-                items: 
+                items:
                   $ref: '#/components/schemas/User'
   /users/{userId}:
     get:
       summary: Returns a user by ID.
+      tags:
+        - users
       parameters:
         - name: userId
           in: path
@@ -38,38 +47,39 @@ paths:
           description: A user object
           content:
             application/json:
-              schema: 
+              schema:
                 $ref: '#/components/schemas/User'
-        '400': 
-          description: Invalid user ID format.
         '404':
           description: The specified user does not exist.
-  # Plots
-  /plots/{plotId}:
-    get:
-      summary: Returns a plot by ID.
-      parameters:
-      - name: plotId
-        in: path
-        required: true
-        description: The ID of the plot to return.
-        schema:
-          type: string
-          format: uuid
-          minimum: 1
-      responses:
-        '200':
-          description: A corner plot object
           content:
             application/json:
-              schema: 
-                $ref: '#/components/schemas/CornerPlot'
-        '400': 
-          description: Invalid plot ID format.
-        '404':
-          description: The specified plot does not exist.
-  
-                  
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Add a new user.
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPost'
+      responses:
+        '201':
+          description: User successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: The account with the specified username already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
 components:
   schemas:
     User:
@@ -82,11 +92,36 @@ components:
           type: string
         displayName:
           type: string
-      required:  
+        plotCollections:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlotCollection'
+        cornerPlots:
+          type: array
+          items:
+            $ref: '#/components/schemas/CornerPlot'
+      required:
         - id
         - username
         - displayName
-    CornerPlot:
+    UserPost:
+      type: object
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - username
+        - displayName
+        - email
+        - password
+    PlotCollection:
       type: object
       properties:
         id:
@@ -94,20 +129,20 @@ components:
           format: uuid
         name:
           type: string
-        author:
-          $ref: '#/components/schemas/User'
-        date:
-          type: string
-          format: date
         description:
           type: string
-        locked:
-          type: boolean
-        paramaters:
+        author:
+          $ref: '#/components/schemas/User'
+        baseParameters:
           type: array
           items:
-            $ref: '#/components/schemas/Parameter'
-    Parameter:
+            $ref: '#/components/schemas/BaseParameter'
+      required:
+        - idsefcsd
+        - name
+        - description
+        - author
+    BaseParameter:
       type: object
       properties:
         id:
@@ -117,30 +152,84 @@ components:
           type: string
         latexLabel:
           type: string
+          nullable: true
         unit:
           type: string
-        domainMax:
-          type: number
-          format: double
-        domainMin:
-          type: number
-          format: double
-        hidden:
-          type: boolean
         values:
           type: array
           items:
-            oneOf:
-              - type: number
-                format: double
-              - $ref: '#/components/schemas/Complex'
+            $ref: '#/components/schemas/Complex'
+      required:
+        - id
+        - name
+        - latexLabel
+        - unit
+    CornerPlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        locked:
+          type: boolean
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterConfig'
+        sourceCollection:
+          $ref: '#/components/schemas/PlotCollection'
+      required:
+        - id
+        - name
+        - description
+        - author
+        - locked
+        - parameters
+        - sourceCollection
+    ParameterConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        baseParameter:
+          $ref: '#/components/schemas/BaseParameter'
+        domainMin:
+          $ref: '#/components/schemas/Complex'
+        domainMax:
+          $ref: '#/components/schemas/Complex'
+        hidden:
+          type: boolean
+      required:
+        - id
+        - domainMin
+        - domainMax
+        - hidden
+    # Utility types
     Complex:
+      description: Complex number
       type: object
       properties:
         real:
           type: number
           format: double
-        imag: 
+        imag:
           type: number
           format: double
-    
+      required:
+        - real
+        - imag
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+      required:
+        - error
