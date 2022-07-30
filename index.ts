@@ -1,15 +1,17 @@
-import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
+import express, { Request, Response } from "express";
+import { config as dotenv_config} from "dotenv";
+import UPLOAD_ROUTE from './src/Upload/UploadController';
 
-dotenv.config();
+dotenv_config();
 
-const app: Express = express();
+let app = express();
 const port = process.env.PORT;
+
+app.use("/upload", UPLOAD_ROUTE);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server is running");
 });
-
 app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
+  console.log(`⚡️[server]: Brand new Server is running at https://localhost:${port}`);
 });
