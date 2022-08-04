@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { config as dotenv_config} from "dotenv";
-import UPLOAD_ROUTE from './src/Upload/UploadController';
+import UPLOAD_ROUTE from './Upload/UploadController';
 
 dotenv_config();
 
