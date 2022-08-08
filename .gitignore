@@ -4,3 +4,6 @@ dist/
 
 # Jetbrains IDE configurations
 .idea
+
+# Firebase Admin credentials
+service-account-file.json
