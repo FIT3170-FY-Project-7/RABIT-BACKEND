@@ -1,7 +1,12 @@
-
-interface Login {
+import { getAuth } from 'firebase-admin/auth';
+import { findUserByEmail } from './UserRepository';
+export interface Login {
     readonly email: string,
     readonly password: string,
+}
+
+export interface LoginResponse {
+    readonly jwt: string
 }
 
 interface SignUpData {
@@ -10,6 +15,9 @@ interface SignUpData {
     readonly password: string,
 }
 
-function login(credentials: Login) {}
+function login(credentials: Login): Promise<string> {
+    let uid = findUserByEmail(credentials.email).id;
+    return getAuth().createCustomToken(uid.toString());
+}
 
-function createAccount(userDetails: SignUpData) {}
+function createAccount(userDetails: SignUpData) { }

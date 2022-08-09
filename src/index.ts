@@ -3,6 +3,7 @@ import { config as dotenv_config} from "dotenv";
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 
 import UPLOAD_ROUTE from './Upload/UploadController';
+import USER_ROUTE from './User/UserController';
 
 // Import env file
 let envConfig = dotenv_config();
@@ -23,6 +24,7 @@ let app = express();
 const port = process.env.PORT;
 
 app.use("/upload", UPLOAD_ROUTE);
+app.use("/user", USER_ROUTE);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server is running");

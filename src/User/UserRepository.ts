@@ -6,6 +6,10 @@ export interface User {
     email: string
 }
 
-function findUserByid(id: typeof v4): User | null {
+export function findUserById(id: typeof v4): User | null {
+    return null;
+}
+
+export function findUserByEmail(email: string): User | null {
     return null;
 }
