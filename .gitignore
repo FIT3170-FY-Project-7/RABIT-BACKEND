@@ -4,3 +4,5 @@ dist/
 
 # Jetbrains IDE configurations
 .idea
+
+data/

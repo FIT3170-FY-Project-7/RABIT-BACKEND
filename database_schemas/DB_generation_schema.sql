@@ -18,7 +18,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE rabit_user
 (
-    user_id      BINARY(16)   NOT NULL,
+    user_id      CHAR(36)   NOT NULL,
     display_name VARCHAR(255) NOT NULL,
     email        VARCHAR(255) NOT NULL
 );
@@ -28,8 +28,8 @@ ALTER TABLE rabit_user
 
 CREATE TABLE upload
 (
-    upload_id       BINARY(16) NOT NULL,
-    user_id         BINARY(16) NOT NULL,
+    upload_id       CHAR(36) NOT NULL,
+    user_id         CHAR(36) NOT NULL,
     upload_datetime DATETIME
 );
 
@@ -38,9 +38,8 @@ ALTER TABLE upload
 
 CREATE TABLE file_pointer
 (
-    upload_id     BINARY(16)   NOT NULL,
-    collection_id BINARY(16)   NOT NULL,
-    filepath      VARCHAR(255) NOT NULL
+    upload_id     CHAR(36)   NOT NULL,
+    collection_id CHAR(36)   NOT NULL
 );
 
 ALTER TABLE file_pointer
@@ -48,7 +47,8 @@ ALTER TABLE file_pointer
 
 CREATE TABLE plot_collection
 (
-    collection_id BINARY(16) NOT NULL
+    collection_id CHAR(36) NOT NULL,
+    collection_name VARCHAR(255) NOT NULL
 );
 
 ALTER TABLE plot_collection
@@ -56,9 +56,9 @@ ALTER TABLE plot_collection
 
 CREATE TABLE base_parameter
 (
-    parameter_id   BINARY(16)  NOT NULL,
-    parameter_name VARCHAR(32) NOT NULL,
-    collection_id  BINARY(16)  NOT NULL
+    parameter_id   CHAR(36)  NOT NULL,
+    parameter_name VARCHAR(2) NOT NULL,
+    collection_id  CHAR(36)  NOT NULL
 );
 
 ALTER TABLE base_parameter
@@ -66,10 +66,10 @@ ALTER TABLE base_parameter
 
 CREATE TABLE corner_plot
 (
-    corner_id     BINARY(16) NOT NULL,
+    corner_id     CHAR(36) NOT NULL,
     plot_locked   BOOLEAN    NOT NULL,
-    collection_id BINARY(16) NOT NULL,
-    user_id       BINARY(16) NOT NULL
+    collection_id CHAR(36) NOT NULL,
+    user_id       CHAR(36) NOT NULL
 );
 
 ALTER TABLE corner_plot
@@ -77,8 +77,8 @@ ALTER TABLE corner_plot
 
 CREATE TABLE parameter_config
 (
-    corner_id    BINARY(16)    NOT NULL,
-    parameter_id BINARY(16)    NOT NULL,
+    corner_id    CHAR(36)    NOT NULL,
+    parameter_id CHAR(36)    NOT NULL,
     domain_max   NUMERIC(7, 3) NOT NULL,
     domain_min   NUMERIC(7, 3) NOT NULL,
     hidden       BOOLEAN       NOT NULL
