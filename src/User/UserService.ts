@@ -15,9 +15,26 @@ interface SignUpData {
     readonly password: string,
 }
 
-function login(credentials: Login): Promise<string> {
-    let uid = findUserByEmail(credentials.email).id;
-    return getAuth().createCustomToken(uid.toString());
+export class InvalidCredentialsError extends Error {
+    constructor() {
+        super("Invalid username and/or password.");
+
+        Object.setPrototypeOf(this, InvalidCredentialsError.prototype);
+    }
+}
+/**
+ * Log in a user.
+ * @param credentials user credentials
+ * @returns JWT token
+ */
+export function login(credentials: Login): Promise<string> {
+    let user = findUserByEmail(credentials.email)
+    if (user !== null) {
+        let uid = user.id;
+        return getAuth().createCustomToken(uid.toString());
+    } else {
+        throw new InvalidCredentialsError();
+    }
 }
 
 function createAccount(userDetails: SignUpData) { }
