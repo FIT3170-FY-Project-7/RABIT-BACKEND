@@ -12,5 +12,5 @@ app.use(router);
 
 const port = process.env.PORT;
 app.listen(port, () => {
-  console.log(`Backend is running at http://localhost:${port}`);
+	console.log(`Backend is running at http://localhost:${port}`);
 });

@@ -52,7 +52,7 @@ router.post("/raw-data", async (req: Request, res: Response) => {
 });
 
 router.get("/raw-data/", async (req: Request, res: Response) => {
-	databaseConnection.query(
+	databaseConnection.query<PlotCollection[]>(
 		`SELECT * FROM plot_collection`,
 		(err, rawDataList, fields) => {
 			if (err) {
@@ -88,6 +88,34 @@ router.get("/raw-data/:id", async (req: Request, res: Response) => {
 					id: req.params.id,
 					name: row.collection_name,
 					data,
+				});
+			}
+		}
+	);
+});
+
+router.get("/raw-data/:id/posteriors/", async (req: Request, res: Response) => {
+	databaseConnection.query<(PlotCollection | FilePointer | Upload)[]>(
+		`SELECT * FROM (plot_collection p JOIN file_pointer f on p.collection_id = f.collection_id) JOIN upload u ON f.upload_id = u.upload_id WHERE p.collection_id = ?;`,
+		[req.params.id],
+		(err, rows, fields) => {
+			if (err) {
+				const message = "Failed to fetch from database";
+				console.error(message, err);
+				res.status(500).send({ message });
+			} else {
+				if (rows?.length === 0) {
+					res.status(404).send({
+						message:
+							"Plot collection with given id doesn't not exist",
+					});
+				}
+				const row = rows[0];
+				const data = readFile(row.upload_id);
+				res.send({
+					id: req.params.id,
+					name: row.collection_name,
+					posteriors: JSON.parse(data).posterior,
 				});
 			}
 		}
