@@ -8,7 +8,11 @@ export interface LoginResponse {
     readonly jwt: string
 }
 
-interface SignUpData {
+export interface SignUpResponse {
+    readonly jwt: string
+}
+
+export interface SignUpData {
     readonly email: string,
     readonly displayName: string,
     readonly password: string,
@@ -16,11 +20,20 @@ interface SignUpData {
 
 export class InvalidCredentialsError extends Error {
     constructor() {
-        super("Invalid username and/or password.");
+        super("Invalid email and/or password.");
 
         Object.setPrototypeOf(this, InvalidCredentialsError.prototype);
     }
 }
+
+export class InvalidSignUpError extends Error {
+    constructor() {
+        super("Email taken and/or invalid password.");
+
+        Object.setPrototypeOf(this, InvalidSignUpError.prototype);
+    }
+}
+
 
 /**
  * Log in a user.
@@ -72,7 +85,7 @@ export function createAccount(userDetails: SignUpData):Promise<string> {
         // throw error if sign up didnt work
         const errorCode = error.code;
         const errorMessage = error.message;
-        throw error
+        throw new InvalidSignUpError
     });
 
     return userCredtoJWT(newUser)
