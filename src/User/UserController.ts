@@ -7,7 +7,7 @@ const router = Router();
 
 class InvalidCredentialsResponse extends RestErrorResponse {
     constructor(error: InvalidCredentialsError, req: Request<Login>) {
-        super("/errors/invalid-credentials", "Invalid Credentials", 404, error.message, req.path)
+        super("/errors/invalid-credentials", "Invalid Credentials", 401, error.message, req.path)
     }
 }
 
