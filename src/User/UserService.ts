@@ -1,5 +1,4 @@
-import { getAuth } from 'firebase-admin/auth';
-import { findUserByEmail } from './UserRepository';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
 export interface Login {
     readonly email: string,
     readonly password: string,
@@ -22,19 +21,62 @@ export class InvalidCredentialsError extends Error {
         Object.setPrototypeOf(this, InvalidCredentialsError.prototype);
     }
 }
+
 /**
  * Log in a user.
+ * @param auth Auth object for current instance of FirebaseApp.
  * @param credentials user credentials
- * @returns JWT token
+ * @returns UserCredential object 
  */
 export function login(credentials: Login): Promise<string> {
-    let user = findUserByEmail(credentials.email)
-    if (user !== null) {
-        let uid = user.id;
-        return getAuth().createCustomToken(uid.toString());
-    } else {
-        throw new InvalidCredentialsError();
-    }
+    
+    // variable for return object
+    let loginUser: UserCredential|null = null
+    let auth = getAuth()
+    // Firebase function for login
+    signInWithEmailAndPassword(auth, credentials.email, credentials.password)
+    .then((userCredential) => {
+        // assign user object to return var, if login successful
+        loginUser= userCredential
+        
+    })
+    .catch((error) => {
+        // throw error if login failed
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        throw new InvalidCredentialsError
+    });
+    return userCredtoJWT(loginUser)
 }
 
-function createAccount(userDetails: SignUpData) { }
+
+/**
+ * Signs up a user.
+ * @param auth Auth object for current instance of FirebaseApp. 
+ * @param userDetails Object with details needed to sign up.
+ * @returns UserCredential object 
+ */
+export function createAccount(userDetails: SignUpData):Promise<string> { 
+    // variable for return object
+    let newUser: UserCredential|null = null
+    let auth = getAuth()
+    // Firebase auth function to create user
+    createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
+    .then((userCredential) => {
+        
+        // if sign successful, assign new user object to return var
+        newUser= userCredential
+        
+    })
+    .catch((error) => {
+        // throw error if sign up didnt work
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        throw error
+    });
+
+    return userCredtoJWT(newUser)
+}
+
+
+function userCredtoJWT(userCred:UserCredential):Promise<string>{return}
