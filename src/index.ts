@@ -1,24 +1,16 @@
-import express, { Request, Response } from "express";
-import { config as dotenv_config } from "dotenv";
+import express from "express";
 import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import router from "./router";
 
-import UPLOAD_ROUTE from "./Upload/UploadController";
-import SHARE_ROUTE from "./Share/ShareController";
+dotenv.config();
+const app = express();
 
-dotenv_config();
-
-let app = express();
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(router);
+
 const port = process.env.PORT;
-
-app.use("/upload", UPLOAD_ROUTE);
-app.use("/share", SHARE_ROUTE);
-
-app.get("/", (req: Request, res: Response) => {
-    res.send("Express + TypeScript Server is running");
-});
-
 app.listen(port, () => {
-    console.log(`⚡️[server]: Backend is running at http://localhost:${port}`);
+  console.log(`Backend is running at http://localhost:${port}`);
 });
