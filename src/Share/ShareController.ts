@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 
-import validateBody from "src/ValidateBody";
-import { TypedRequestBody } from "src/TypedExpressIO";
+import validateBody from "../ValidateBody";
+import { TypedRequestBody } from "../TypedExpressIO";
 import {
     ShareLinkGenerateValidator,
     ShareLinkGenerate,
@@ -19,7 +19,6 @@ router.post(
     "",
     validateBody(ShareLinkGenerateValidator),
     (req: TypedRequestBody<ShareLinkGenerate>, res: Response) => {
-        console.log(req.query);
         res.status(200).send(generateShareURL(req.body));
     }
 );
