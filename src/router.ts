@@ -125,19 +125,22 @@ router.get(
 					const row = rows[0];
 					const data = readFile(row.upload_id);
 					const { query } = req;
-					const raw = JSON.parse(data).posterior.content;
-					const filteredKeys = parameterParse(query?.parameters);
-					const filtered = filteredKeys
-						? filteredKeys.reduce(
-								(obj, key) => ({ ...obj, [key]: raw[key] }),
+					const posteriors = JSON.parse(data).posterior.content;
+					const queryPosteriors = parameterParse(query?.parameters);
+					const filteredPosteriors = queryPosteriors
+						? queryPosteriors.reduce(
+								(obj, key) => ({
+									...obj,
+									[key]: posteriors[key],
+								}),
 								{}
 						  )
-						: raw;
+						: posteriors;
 
 					res.send({
 						id: req.params.id,
 						name: row.collection_name,
-						posteriors: filtered,
+						posteriors: filteredPosteriors,
 					});
 				}
 			}
