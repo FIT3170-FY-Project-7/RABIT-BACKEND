@@ -1,7 +1,11 @@
 import { Router, Request, Response } from "express";
 
-import validateType from "../ValidateType";
-import { ShareGenerateValidator, ShareGenerate } from "./ShareInterfaces/ShareGenerate";
+import validateBody from "src/ValidateBody";
+import { TypedRequestBody } from "src/TypedExpressIO";
+import {
+    ShareLinkGenerateValidator,
+    ShareLinkGenerate,
+} from "./ShareInterfaces/ShareLinkGenerate";
 import { generateShareURL } from "./ShareServices/ShareService";
 
 const router = Router();
@@ -11,20 +15,14 @@ const router = Router();
 /**
  * Generate a share link for a given CornerPlot
  */
-router.post("", (req: Request, res: Response, next) => {
-    try {
-        // Validate the request body
-        const body = validateType(
-            req.body,
-            ShareGenerateValidator
-        ) as ShareGenerate;
-
-        res.status(200).send(generateShareURL(body));
-    } catch (e) {
-        // TODO: Work out how to handle error messages
-        res.status(400).send(e.message);
+router.post(
+    "",
+    validateBody(ShareLinkGenerateValidator),
+    (req: TypedRequestBody<ShareLinkGenerate>, res: Response) => {
+        console.log(req.query);
+        res.status(200).send(generateShareURL(req.body));
     }
-});
+);
 
 /**
  * Get data for generating a shared corner plot, given its shared id

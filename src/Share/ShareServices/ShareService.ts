@@ -1,6 +1,6 @@
-import { ShareGenerate } from "../ShareInterfaces/ShareGenerate";
+import { ShareLinkGenerate } from "../ShareInterfaces/ShareLinkGenerate";
 
-export const generateShareURL = (plotData: ShareGenerate) => {
+export const generateShareURL = (plotData: ShareLinkGenerate) => {
     // Do some stuff here to initialise the url
 
     return plotData.id;
