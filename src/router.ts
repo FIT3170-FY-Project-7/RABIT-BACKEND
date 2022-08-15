@@ -8,6 +8,13 @@ import databaseConnection, {
 import { v4 as uuidv4 } from "uuid";
 import uploadController from "./Upload/UploadController";
 import { readFile, saveFile } from "./storageController";
+import {
+	RequestParams,
+	ResponseBody,
+	RequestBody,
+	RequestQuery,
+} from "./Request/Request";
+import { parameterParse } from "./Request/RequestParse";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -94,32 +101,48 @@ router.get("/raw-data/:id", async (req: Request, res: Response) => {
 	);
 });
 
-router.get("/raw-data/:id/posteriors/", async (req: Request, res: Response) => {
-	databaseConnection.query<(PlotCollection | FilePointer | Upload)[]>(
-		`SELECT * FROM (plot_collection p JOIN file_pointer f on p.collection_id = f.collection_id) JOIN upload u ON f.upload_id = u.upload_id WHERE p.collection_id = ?;`,
-		[req.params.id],
-		(err, rows, fields) => {
-			if (err) {
-				const message = "Failed to fetch from database";
-				console.error(message, err);
-				res.status(500).send({ message });
-			} else {
-				if (rows?.length === 0) {
-					res.status(404).send({
-						message:
-							"Plot collection with given id doesn't not exist",
+router.get(
+	"/raw-data/:id/posteriors/",
+	async (
+		req: Request<RequestParams, ResponseBody, RequestBody, RequestQuery>,
+		res: Response
+	) => {
+		databaseConnection.query<(PlotCollection | FilePointer | Upload)[]>(
+			`SELECT * FROM (plot_collection p JOIN file_pointer f on p.collection_id = f.collection_id) JOIN upload u ON f.upload_id = u.upload_id WHERE p.collection_id = ?;`,
+			[req.params.id],
+			(err, rows, fields) => {
+				if (err) {
+					const message = "Failed to fetch from database";
+					console.error(message, err);
+					res.status(500).send({ message });
+				} else {
+					if (rows?.length === 0) {
+						res.status(404).send({
+							message:
+								"Plot collection with given id doesn't not exist",
+						});
+					}
+					const row = rows[0];
+					const data = readFile(row.upload_id);
+					const { query } = req;
+					const raw = JSON.parse(data).posterior.content;
+					const filteredKeys = parameterParse(query?.parameters);
+					const filtered = filteredKeys
+						? filteredKeys.reduce(
+								(obj, key) => ({ ...obj, [key]: raw[key] }),
+								{}
+						  )
+						: raw;
+
+					res.send({
+						id: req.params.id,
+						name: row.collection_name,
+						posteriors: filtered,
 					});
 				}
-				const row = rows[0];
-				const data = readFile(row.upload_id);
-				res.send({
-					id: req.params.id,
-					name: row.collection_name,
-					posteriors: JSON.parse(data).posterior,
-				});
 			}
-		}
-	);
-});
+		);
+	}
+);
 
 export default router;
