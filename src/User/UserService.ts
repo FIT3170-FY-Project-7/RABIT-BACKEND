@@ -1,30 +1,49 @@
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { RestErrorResponse } from '../RestErrorResponse';
 
+/**
+ * Request body for login.
+ */
 export interface Login {
     readonly email: string,
     readonly password: string,
 }
 
+/**
+ * Body of login response.
+ */
 export interface LoginResponse {
     readonly jwt: string
 }
 
+/**
+ * Body of sign up response.
+ */
 export interface SignUpResponse {
     readonly jwt: string
 }
 
+/**
+ * Request body for user sign up
+ */
 export interface SignUpData {
     readonly email: string,
     readonly displayName: string,
     readonly password: string
 }
+
+/**
+ * Error class for invalid login.
+ */
 export class InvalidCredentialsError extends RestErrorResponse {
     constructor() {
         super("/errors/invalid-credentials", "Invalid Credentials", 404, "Invalid email and/or password.", "/user/login")
     }
 }
 
+/**
+ * Error class for signup errors.
+ */
 export class InvalidSignUpError extends RestErrorResponse {
     constructor() {
         super("/errors/invalid-signup", "Invalid Sign-Up", 404, "Email taken and/or invalid password.","/user/SignUp")

@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { RestErrorResponse } from "../RestErrorResponse";
 import { addResponseHeaders } from "../Utils";
 import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./UserService";
 
@@ -23,6 +22,14 @@ router.post("/login", (req: Request<Login>, res: Response<LoginResponse>, next: 
         })
 })
 
+/**
+ * Express error handler for invalid login.
+ * @param err
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<Login>, res: Response<InvalidCredentialsError>, next: NextFunction) {
     if (res.headersSent || !(err instanceof InvalidCredentialsError)) {
         return next(err)
@@ -30,7 +37,6 @@ export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req
     addResponseHeaders(res);
     res.status(err.status);
     res.json(err);
-
 }
 
 // Signup
@@ -51,6 +57,14 @@ router.post("/SignUp", (req: Request<SignUpData>, res: Response<SignUpResponse>,
         })
 })
 
+/**
+ * Express error handler for invalid signup.
+ * @param err
+ * @param req
+ * @param res
+ * @param next
+ * @returns
+ */
 export function invalidSignUpErrorHandler(err: InvalidSignUpError, req: Request<SignUpData>, res: Response<InvalidSignUpError>, next: NextFunction) {
     if (res.headersSent || !(err instanceof InvalidSignUpError)) {
         return next(err)
