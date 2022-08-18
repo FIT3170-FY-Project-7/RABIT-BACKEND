@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { RestErrorResponse, sendBadRequest } from "../RestErrorResponse";
+import { RestErrorResponse } from "../RestErrorResponse";
 import { addResponseHeaders } from "../Utils";
-import { InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./UserService";
+import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./UserService";
 
 const router = Router();
 
@@ -36,10 +36,14 @@ router.post("/login", (req: Request<Login>, res: Response<LoginResponse>, next: 
 })
 
 export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<Login>, res: Response<InvalidCredentialsResponse>, next: NextFunction) {
+    if (res.headersSent) {
+        return next(err)
+    }
     let errObject = new InvalidCredentialsResponse(err, req);
     addResponseHeaders(res);
     res.status(errObject.status);
-    return res.json(errObject);
+    res.json(errObject);
+
 }
 
 // Signup
@@ -48,26 +52,25 @@ export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req
 //  email: string,
 //  displayName: string,
 //  password: string,
-router.post("/SignUp", (req: Request<SignUpData>, res: Response<SignUpResponse | InvalidSignUpResponse>) => {
-    try {
-        login(req.body)
-            .then((token) => {
-                addResponseHeaders(res);
-                return res.json({ jwt: token });
-            })
-            .catch((e) => {
-                return sendBadRequest(e, req, res);
-            })
-    } catch (e) {
-        if (e instanceof InvalidSignUpError) {
-            let err = new InvalidSignUpResponse(e, req);
+router.post("/SignUp", (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
+    createAccount(req.body)
+        .then((token) => {
             addResponseHeaders(res);
-            res.status(err.status);
-            return res.json(err);
-        } else {
-            return sendBadRequest(e, req, res);
-        }
-    }
+            return res.json({ jwt: token });
+        })
+        .catch((e) => {
+            next(e);
+        })
 })
+
+export function invalidSignUpErrorHandler(err: InvalidSignUpError, req: Request<SignUpData>, res: Response<InvalidSignUpResponse>, next: NextFunction) {
+    if (res.headersSent) {
+        return next(err)
+    }
+    let errObject = new InvalidSignUpResponse(err, req);
+    addResponseHeaders(res);
+    res.status(errObject.status);
+    res.json(errObject);
+}
 
 export default router;

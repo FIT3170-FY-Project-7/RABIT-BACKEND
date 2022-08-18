@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { addResponseHeaders } from "./Utils";
 
 /**
@@ -29,22 +29,18 @@ export class RestErrorResponse {
 /**
  * API error for malformed request
  */
-export class BadRequestResponse extends RestErrorResponse {
+class BadRequestResponse extends RestErrorResponse {
     constructor(detail: string, instance: string) {
         super("/errors/bad-request", "Bad Request", 400, detail, instance);
     }
 }
 
-/**
- * Prepares a {@link BadRequestResponse} JSON response
- * @param exception the error that caused the bad request
- * @param req Express request object
- * @param res Express response object
- * @returns Express response object, with a JSON body
- */
-export function sendBadRequest<R>(exception: any, req: Request<R>, res: Response): Response {
-    let err = new BadRequestResponse(exception, req.path);
+export function badRequestErrorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+    if (res.headersSent) {
+        return next(err)
+    }
+    let errObject = new BadRequestResponse(err, req.path);
     addResponseHeaders(res);
     res.status(err.status);
-    return res.json(err);
+    res.json(errObject);
 }

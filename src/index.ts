@@ -2,9 +2,9 @@ import { config as dotenv_config } from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import { initializeApp } from 'firebase/app';
 
-import { sendBadRequest } from "./RestErrorResponse";
+import { badRequestErrorHandler } from "./RestErrorResponse";
 import UPLOAD_ROUTE from './Upload/UploadController';
-import USER_ROUTE, { invalidCredentialsErrorHandler } from './User/UserController';
+import USER_ROUTE, { invalidCredentialsErrorHandler, invalidSignUpErrorHandler } from './User/UserController';
 
 // Import env file
 let envConfig = dotenv_config();
@@ -34,15 +34,10 @@ const port = process.env.PORT;
 app.use("/upload", UPLOAD_ROUTE);
 app.use("/user", USER_ROUTE);
 
-// Handle JSON parse error
-// This needs to be handled in index because a SyntaxError is thrown before it reaches the controller code
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err instanceof SyntaxError) {
-    return sendBadRequest(err.message, req, res);
-  }
-  next();
-});
-app.use(invalidCredentialsErrorHandler);
+// Add error handlers
+//app.use(invalidCredentialsErrorHandler);
+app.use(invalidSignUpErrorHandler);
+app.use(badRequestErrorHandler);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server is running");

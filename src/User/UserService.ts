@@ -69,19 +69,22 @@ export function login(credentials: Login): Promise<string> {
  */
 export function createAccount(userDetails: SignUpData):Promise<string> {
     // variable for return object
-    let newUser: UserCredential|null = null
+    let newUser: UserCredential | null = null
     let auth = getAuth()
     // Firebase auth function to create user
     createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
-    .then((userCredential) => {
-        // if sign successful, assign new user object to return var
-        newUser = userCredential
-    })
-    .catch((error) => {
-        // throw error if sign up didnt work
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        throw new InvalidSignUpError
-    });
-    return newUser.user.getIdToken();
+        .then((userCredential) => {
+            // if sign successful, assign new user object to return var
+            newUser = userCredential
+        })
+        .catch((error) => {
+            // throw error if sign up didnt work
+            console.error(error)
+            throw new InvalidSignUpError();
+        });
+    if (newUser) {
+        return newUser.user.getIdToken();
+    } else {
+        throw new InvalidSignUpError();
+    }
 }
