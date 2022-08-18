@@ -40,24 +40,17 @@ export class InvalidSignUpError extends Error {
  * @returns JWT of user credential
  */
 export function login(credentials: Login): Promise<string> {
-    // variable for return object
-    let loginUser: UserCredential | null = null
     let auth = getAuth()
     // Firebase function for login
-    signInWithEmailAndPassword(auth, credentials.email, credentials.password)
+    return signInWithEmailAndPassword(auth, credentials.email, credentials.password)
     .then((userCredential) => {
         // assign user object to return var, if login successful
-        loginUser = userCredential;
+        return userCredential.user.getIdToken();
     })
     .catch((error) => {
         // throw error if login failed
         throw new InvalidCredentialsError();
     });
-    if (loginUser) {
-        return loginUser.user.getIdToken();
-    } else {
-        throw new InvalidCredentialsError();
-    }
 }
 
 
@@ -65,26 +58,19 @@ export function login(credentials: Login): Promise<string> {
  * Signs up a user.
  * @param auth Auth object for current instance of FirebaseApp.
  * @param userDetails Object with details needed to sign up.
- * @returns UserCredential object
+ * @returns JWT of user credential
  */
-export function createAccount(userDetails: SignUpData):Promise<string> {
-    // variable for return object
-    let newUser: UserCredential | null = null
+export function createAccount(userDetails: SignUpData): Promise<string> {
     let auth = getAuth()
     // Firebase auth function to create user
-    createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
+    return createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
         .then((userCredential) => {
             // if sign successful, assign new user object to return var
-            newUser = userCredential
+            return userCredential.user.getIdToken();
         })
         .catch((error) => {
             // throw error if sign up didnt work
             console.error(error)
             throw new InvalidSignUpError();
         });
-    if (newUser) {
-        return newUser.user.getIdToken();
-    } else {
-        throw new InvalidSignUpError();
-    }
 }

@@ -56,6 +56,7 @@ router.post("/SignUp", (req: Request<SignUpData>, res: Response<SignUpResponse>,
     createAccount(req.body)
         .then((token) => {
             addResponseHeaders(res);
+            res.status(201);
             return res.json({ jwt: token });
         })
         .catch((e) => {
