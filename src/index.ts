@@ -35,9 +35,11 @@ app.use("/upload", UPLOAD_ROUTE);
 app.use("/user", USER_ROUTE);
 
 // Add error handlers
-//app.use(invalidCredentialsErrorHandler);
+
+app.use(invalidCredentialsErrorHandler);
 app.use(invalidSignUpErrorHandler);
 app.use(badRequestErrorHandler);
+
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server is running");

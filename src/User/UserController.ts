@@ -5,18 +5,6 @@ import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Logi
 
 const router = Router();
 
-class InvalidCredentialsResponse extends RestErrorResponse {
-    constructor(error: InvalidCredentialsError, req: Request<Login>) {
-        super("/errors/invalid-credentials", "Invalid Credentials", 404, error.message, req.path)
-    }
-}
-
-class InvalidSignUpResponse extends RestErrorResponse {
-    constructor(error: InvalidSignUpError, req: Request<SignUpData>) {
-        super("/errors/invalid-signup", "Invalid Sign-Up", 404, error.message, req.path)
-    }
-}
-
 // User authentication controllers
 
 // Login
@@ -35,14 +23,13 @@ router.post("/login", (req: Request<Login>, res: Response<LoginResponse>, next: 
         })
 })
 
-export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<Login>, res: Response<InvalidCredentialsResponse>, next: NextFunction) {
-    if (res.headersSent) {
+export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<Login>, res: Response<InvalidCredentialsError>, next: NextFunction) {
+    if (res.headersSent || !(err instanceof InvalidCredentialsError)) {
         return next(err)
     }
-    let errObject = new InvalidCredentialsResponse(err, req);
     addResponseHeaders(res);
-    res.status(errObject.status);
-    res.json(errObject);
+    res.status(err.status);
+    res.json(err);
 
 }
 
@@ -64,14 +51,13 @@ router.post("/SignUp", (req: Request<SignUpData>, res: Response<SignUpResponse>,
         })
 })
 
-export function invalidSignUpErrorHandler(err: InvalidSignUpError, req: Request<SignUpData>, res: Response<InvalidSignUpResponse>, next: NextFunction) {
-    if (res.headersSent) {
+export function invalidSignUpErrorHandler(err: InvalidSignUpError, req: Request<SignUpData>, res: Response<InvalidSignUpError>, next: NextFunction) {
+    if (res.headersSent || !(err instanceof InvalidSignUpError)) {
         return next(err)
     }
-    let errObject = new InvalidSignUpResponse(err, req);
     addResponseHeaders(res);
-    res.status(errObject.status);
-    res.json(errObject);
+    res.status(err.status);
+    res.json(err);
 }
 
 export default router;

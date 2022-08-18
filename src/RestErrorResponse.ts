@@ -39,7 +39,7 @@ export function badRequestErrorHandler(err: any, req: Request, res: Response, ne
     if (res.headersSent) {
         return next(err)
     }
-    let errObject = new BadRequestResponse(err, req.path);
+    let errObject = new BadRequestResponse(err.message, req.path);
     addResponseHeaders(res);
     res.status(err.status);
     res.json(errObject);

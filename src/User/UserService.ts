@@ -1,4 +1,5 @@
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
+import { RestErrorResponse } from '../RestErrorResponse';
 
 export interface Login {
     readonly email: string,
@@ -18,19 +19,15 @@ export interface SignUpData {
     readonly displayName: string,
     readonly password: string
 }
-export class InvalidCredentialsError extends Error {
+export class InvalidCredentialsError extends RestErrorResponse {
     constructor() {
-        super("Invalid email and/or password.");
-
-        Object.setPrototypeOf(this, InvalidCredentialsError.prototype);
+        super("/errors/invalid-credentials", "Invalid Credentials", 404, "Invalid email and/or password.", "/user/login")
     }
 }
 
-export class InvalidSignUpError extends Error {
+export class InvalidSignUpError extends RestErrorResponse {
     constructor() {
-        super("Email taken and/or invalid password.");
-
-        Object.setPrototypeOf(this, InvalidSignUpError.prototype);
+        super("/errors/invalid-signup", "Invalid Sign-Up", 404, "Email taken and/or invalid password.","/user/SignUp")
     }
 }
 /**
@@ -70,7 +67,6 @@ export function createAccount(userDetails: SignUpData): Promise<string> {
         })
         .catch((error) => {
             // throw error if sign up didnt work
-            console.error(error)
             throw new InvalidSignUpError();
         });
 }
