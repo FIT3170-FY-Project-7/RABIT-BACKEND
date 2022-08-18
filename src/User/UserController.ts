@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import { RestErrorResponse, sendBadRequest } from "../RestErrorResponse";
 import { addResponseHeaders } from "../Utils";
 import { InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./UserService";
@@ -7,7 +7,7 @@ const router = Router();
 
 class InvalidCredentialsResponse extends RestErrorResponse {
     constructor(error: InvalidCredentialsError, req: Request<Login>) {
-        super("/errors/invalid-credentials", "Invalid Credentials", 401, error.message, req.path)
+        super("/errors/invalid-credentials", "Invalid Credentials", 404, error.message, req.path)
     }
 }
 
@@ -24,27 +24,23 @@ class InvalidSignUpResponse extends RestErrorResponse {
 // Input:
 //  email: string,
 //  password: string,
-router.post("/login", (req: Request<Login>, res: Response<LoginResponse | InvalidCredentialsResponse>) => {
-    try {
-        login(req.body)
-            .then((token) => {
-                addResponseHeaders(res);
-                return res.json({ jwt: token });
-            })
-            .catch((e) => {
-                return sendBadRequest(e, req, res);
-            })
-    } catch (e) {
-        if (e instanceof InvalidCredentialsError) {
-            let err = new InvalidCredentialsResponse(e, req);
+router.post("/login", (req: Request<Login>, res: Response<LoginResponse>, next: NextFunction) => {
+    login(req.body)
+        .then((token) => {
             addResponseHeaders(res);
-            res.status(err.status);
-            return res.json(err);
-        } else {
-            return sendBadRequest(e, req, res);
-        }
-    }
+            return res.json({ jwt: token });
+        })
+        .catch((e) => {
+            next(e);
+        })
 })
+
+export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<Login>, res: Response<InvalidCredentialsResponse>, next: NextFunction) {
+    let errObject = new InvalidCredentialsResponse(err, req);
+    addResponseHeaders(res);
+    res.status(errObject.status);
+    return res.json(errObject);
+}
 
 // Signup
 // Route: /SignUp

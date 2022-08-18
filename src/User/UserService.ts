@@ -1,4 +1,5 @@
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
+
 export interface Login {
     readonly email: string,
     readonly password: string,
@@ -15,9 +16,8 @@ export interface SignUpResponse {
 export interface SignUpData {
     readonly email: string,
     readonly displayName: string,
-    readonly password: string,
+    readonly password: string
 }
-
 export class InvalidCredentialsError extends Error {
     constructor() {
         super("Invalid email and/or password.");
@@ -33,17 +33,15 @@ export class InvalidSignUpError extends Error {
         Object.setPrototypeOf(this, InvalidSignUpError.prototype);
     }
 }
-
-
 /**
  * Log in a user.
  * @param auth Auth object for current instance of FirebaseApp.
  * @param credentials user credentials
- * @returns UserCredential object
+ * @returns JWT of user credential
  */
 export function login(credentials: Login): Promise<string> {
     // variable for return object
-    let loginUser: UserCredential|null = null
+    let loginUser: UserCredential | null = null
     let auth = getAuth()
     // Firebase function for login
     signInWithEmailAndPassword(auth, credentials.email, credentials.password)
@@ -53,11 +51,13 @@ export function login(credentials: Login): Promise<string> {
     })
     .catch((error) => {
         // throw error if login failed
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        throw new InvalidCredentialsError
+        throw new InvalidCredentialsError();
     });
-    return userCredtoJWT(loginUser)
+    if (loginUser) {
+        return loginUser.user.getIdToken();
+    } else {
+        throw new InvalidCredentialsError();
+    }
 }
 
 
@@ -74,10 +74,8 @@ export function createAccount(userDetails: SignUpData):Promise<string> {
     // Firebase auth function to create user
     createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
     .then((userCredential) => {
-
         // if sign successful, assign new user object to return var
-        newUser= userCredential
-
+        newUser = userCredential
     })
     .catch((error) => {
         // throw error if sign up didnt work
@@ -85,9 +83,5 @@ export function createAccount(userDetails: SignUpData):Promise<string> {
         const errorMessage = error.message;
         throw new InvalidSignUpError
     });
-
-    return userCredtoJWT(newUser)
+    return newUser.user.getIdToken();
 }
-
-
-function userCredtoJWT(userCred:UserCredential):Promise<string>{return}
