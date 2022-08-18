@@ -39,10 +39,9 @@ export class InvalidSignUpError extends Error {
  * Log in a user.
  * @param auth Auth object for current instance of FirebaseApp.
  * @param credentials user credentials
- * @returns UserCredential object 
+ * @returns UserCredential object
  */
 export function login(credentials: Login): Promise<string> {
-    
     // variable for return object
     let loginUser: UserCredential|null = null
     let auth = getAuth()
@@ -50,8 +49,7 @@ export function login(credentials: Login): Promise<string> {
     signInWithEmailAndPassword(auth, credentials.email, credentials.password)
     .then((userCredential) => {
         // assign user object to return var, if login successful
-        loginUser= userCredential
-        
+        loginUser = userCredential;
     })
     .catch((error) => {
         // throw error if login failed
@@ -65,21 +63,21 @@ export function login(credentials: Login): Promise<string> {
 
 /**
  * Signs up a user.
- * @param auth Auth object for current instance of FirebaseApp. 
+ * @param auth Auth object for current instance of FirebaseApp.
  * @param userDetails Object with details needed to sign up.
- * @returns UserCredential object 
+ * @returns UserCredential object
  */
-export function createAccount(userDetails: SignUpData):Promise<string> { 
+export function createAccount(userDetails: SignUpData):Promise<string> {
     // variable for return object
     let newUser: UserCredential|null = null
     let auth = getAuth()
     // Firebase auth function to create user
     createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
     .then((userCredential) => {
-        
+
         // if sign successful, assign new user object to return var
         newUser= userCredential
-        
+
     })
     .catch((error) => {
         // throw error if sign up didnt work

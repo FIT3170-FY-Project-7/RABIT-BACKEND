@@ -5,6 +5,8 @@ import { initializeApp } from 'firebase/app';
 import { sendBadRequest } from "./RestErrorResponse";
 import UPLOAD_ROUTE from './Upload/UploadController';
 import USER_ROUTE from './User/UserController';
+import JWT_ROUTE from './Jwt/JwtController';
+import { generateEd25519KeyPair } from "./Jwt/JwtService";
 
 // Import env file
 let envConfig = dotenv_config();
@@ -26,11 +28,15 @@ const firebaseConfig =  {
 
 const firebaseApp = initializeApp(firebaseConfig);
 
+// Generate key pair for JWT
+export const jwtKey = generateEd25519KeyPair();
+
 // Initialise express server
 let app = express();
 app.use(express.json());
 const port = process.env.PORT;
 
+app.use("/jwt", JWT_ROUTE);
 app.use("/upload", UPLOAD_ROUTE);
 app.use("/user", USER_ROUTE);
 
