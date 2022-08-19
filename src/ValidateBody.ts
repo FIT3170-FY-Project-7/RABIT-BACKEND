@@ -5,7 +5,7 @@
  */
 import * as t from "io-ts";
 import { either } from "fp-ts";
-import { NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 
 /**
  * Validate raw JSON data against an interface
@@ -40,7 +40,7 @@ export const validateType = (rawData: any, validator: t.TypeC<any>): any => {
  * @returns Either the next function in the call chain, or sends a response with status 400
  */
 const validateBody = (validator: t.TypeC<any>) => {
-    return (req: any, res: any, next: NextFunction) => {
+    return (req: Request, res: Response, next: NextFunction) => {
         try {
             validateType(req.body, validator);
             return next();
