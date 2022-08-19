@@ -2,12 +2,11 @@ import { Router, Request, Response } from "express";
 import sample_service from "./UploadServices/UploadService";
 import { addResponseHeaders } from "../Utils";
 import multer, { FileFilterCallback } from 'multer'
+import fs from 'fs/promises';
 
 type DestinationCallback = (error: Error | null, destination: string) => void
 type FileNameCallback = (error: Error | null, filename: string) => void
 
-var cors = require('cors')
-const fs = require('fs/promises');
 const router = Router();
 
 // Route to this controller: /upload
@@ -23,15 +22,13 @@ router.get("/sample", (req: Request, res: Response, next) => {
     res.send(sample_service())
 })
 
-router.use(cors())
-
-router.post('/uploads', function (req: Request, res: Response) {
+router.post('/', function (req: Request, res: Response) {
     let filePaths : string[] = []
 
     //set up the storage path and filename
     const storage = multer.diskStorage({
         destination: function (req: Request, file:Express.Multer.File, cb:DestinationCallback) {
-            cb(null, __dirname + '/uploads')
+            cb(null, process.env.DATA_PATH)
         },
         filename: function (req: Request, file:Express.Multer.File, cb: FileNameCallback) {
 
@@ -44,7 +41,7 @@ router.post('/uploads', function (req: Request, res: Response) {
     })
 
 
-    var upload = multer({ storage: storage }).any()
+    const upload = multer({ storage: storage }).any()
 
     console.log("post received")
 
@@ -60,6 +57,7 @@ router.post('/uploads', function (req: Request, res: Response) {
             console.log(err)
             return res.status(500).json(err)
         }
+        return res.status(200).send(req.file)
     })
 
     // for (var filePath of filePaths) {
@@ -82,8 +80,6 @@ router.post('/uploads', function (req: Request, res: Response) {
     // delete files here
 
     //res.append('filepaths', filePaths)
-
-    return res.status(200).send(req.file)
 })
 
 // app.get('/uploads/', function (req, res) {

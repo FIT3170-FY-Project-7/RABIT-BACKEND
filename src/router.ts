@@ -5,7 +5,7 @@ import shareController from "./Share/ShareController";
 import rawDataController from "./RawData/RawDataController";
 
 const router = Router();
-router.use("/upload", uploadController);
+router.use("/uploads", uploadController);
 router.use("/share", shareController);
 router.use("/raw-data", rawDataController);
 
