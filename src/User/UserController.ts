@@ -45,7 +45,7 @@ export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req
 //  email: string,
 //  displayName: string,
 //  password: string,
-router.post("/SignUp", (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
+router.post("/signup", (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
     createAccount(req.body)
         .then((token) => {
             addResponseHeaders(res);
