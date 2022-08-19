@@ -1,33 +1,31 @@
 import { Router, Request, Response } from "express";
 import sample_service from "./UploadServices/UploadService";
 import { addResponseHeaders } from "../Utils";
-import multer, { FileFilterCallback} from 'multer'
-import fs from 'fs/promises';
-import cors from 'cors';
-
+import multer, { FileFilterCallback } from 'multer'
 
 type DestinationCallback = (error: Error | null, destination: string) => void
 type FileNameCallback = (error: Error | null, filename: string) => void
 
+var cors = require('cors')
+const fs = require('fs/promises');
 const router = Router();
 
 // Route to this controller: /upload
 
-// router.get("/", (req: Request, res: Response, next) => {
-//     addResponseHeaders(res);
-//     res.send("tests")
-// })
+router.get("/", (req: Request, res: Response, next) => {
+    addResponseHeaders(res);
+    res.send("tests")
+})
 
 // This endpoint is accessed using: <API Url>/upload/sample
-router.get("/sample", (req: Request, res: Response) => {
+router.get("/sample", (req: Request, res: Response, next) => {
     addResponseHeaders(res);
     res.send(sample_service())
 })
 
 router.use(cors())
 
-//Endpoint used to process an uploaded file
-router.post('/', function (req: Request, res: Response) {
+router.post('/uploads', function (req: Request, res: Response) {
     let filePaths : string[] = []
 
     //set up the storage path and filename
@@ -51,7 +49,7 @@ router.post('/', function (req: Request, res: Response) {
     console.log("post received")
 
     // upload the file and catch any error.
-    upload(req, res, function (err:any) {
+    upload(req, res, function (err) {
         console.log("entering upload function")
         if (err instanceof multer.MulterError) {
             console.log("multer error on post")
