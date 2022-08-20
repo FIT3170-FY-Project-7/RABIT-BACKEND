@@ -5,6 +5,15 @@ import cors from "cors";
 
 const router = Router();
 
+// CORS config
+let corsOptions = {
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: true,
+    optionsSuccessStatus: 204,
+    allowedHeaders: ["Content-Type", "X-Requested-With"]
+};
+
 // User authentication controllers
 
 // Login
@@ -12,7 +21,8 @@ const router = Router();
 // Input:
 //  email: string,
 //  password: string,
-router.post("/login", cors(), (req: Request<Login>, res: Response<LoginResponse>, next: NextFunction) => {
+router.options("/login", cors(corsOptions));
+router.post("/login", cors(corsOptions), (req: Request<Login>, res: Response<LoginResponse>, next: NextFunction) => {
     login(req.body)
         .then((token) => {
             addResponseHeaders(res);
@@ -46,7 +56,8 @@ export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req
 //  email: string,
 //  displayName: string,
 //  password: string,
-router.post("/signup", cors(), (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
+router.options("/signup", cors(corsOptions));
+router.post("/signup", cors(corsOptions), (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
     createAccount(req.body)
         .then((token) => {
             addResponseHeaders(res);
