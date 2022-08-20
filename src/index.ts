@@ -24,7 +24,15 @@ const firebaseConfig =  {
   appId: process.env.FIREBASE_APP_ID
 }
 
-const firebaseApp = initializeApp(firebaseConfig);
+// Check if firebase config is set properly
+if (!Object.values(firebaseConfig).every(Boolean)) {
+  console.error("Error: invalid Firebase config.");
+  console.error("Place your Firebase app config to the .env file.")
+  console.error("More info: https://firebase.google.com/docs/web/setup#create-firebase-project-and-app");
+  process.exit(1);
+}
+
+initializeApp(firebaseConfig);
 
 // Initialise express server
 let app = express();
@@ -45,5 +53,5 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server is running");
 });
 app.listen(port, () => {
-  console.log(`⚡️[server]: Brand new Server is running at http://localhost:${port}`);
+  console.info(`⚡️[server]: Brand new Server is running at http://localhost:${port}`);
 });
