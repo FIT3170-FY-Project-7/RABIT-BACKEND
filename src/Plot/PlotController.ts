@@ -6,7 +6,7 @@ import {
     SavePlotDataValidator,
     SavePlotData,
 } from "./PlotInterfaces/SavePlotData";
-import { generateShareURL } from "./PlotServices/PlotService";
+import { savePlotData } from "./PlotServices/PlotService";
 
 const router = Router();
 
@@ -19,7 +19,7 @@ router.post(
     "",
     validateBody(SavePlotDataValidator),
     (req: TypedRequestBody<SavePlotData>, res: Response) => {
-        res.status(200).send(generateShareURL(req.body));
+        res.status(200).send(savePlotData(req.body));
     }
 );
 
