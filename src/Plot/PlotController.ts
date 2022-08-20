@@ -3,10 +3,10 @@ import { Router, Request, Response } from "express";
 import validateBody from "../ValidateBody";
 import { TypedRequestBody } from "../TypedExpressIO";
 import {
-    ShareLinkGenerateValidator,
-    ShareLinkGenerate,
-} from "./ShareInterfaces/ShareLinkGenerate";
-import { generateShareURL } from "./ShareServices/ShareService";
+    SavePlotDataValidator,
+    SavePlotData,
+} from "./PlotInterfaces/SavePlotData";
+import { generateShareURL } from "./PlotServices/PlotService";
 
 const router = Router();
 
@@ -17,8 +17,8 @@ const router = Router();
  */
 router.post(
     "",
-    validateBody(ShareLinkGenerateValidator),
-    (req: TypedRequestBody<ShareLinkGenerate>, res: Response) => {
+    validateBody(SavePlotDataValidator),
+    (req: TypedRequestBody<SavePlotData>, res: Response) => {
         res.status(200).send(generateShareURL(req.body));
     }
 );
