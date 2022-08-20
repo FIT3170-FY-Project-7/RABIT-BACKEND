@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { addResponseHeaders } from "../Utils";
 import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./UserService";
+import cors from "cors";
 
 const router = Router();
 
@@ -11,7 +12,7 @@ const router = Router();
 // Input:
 //  email: string,
 //  password: string,
-router.post("/login", (req: Request<Login>, res: Response<LoginResponse>, next: NextFunction) => {
+router.post("/login", cors(), (req: Request<Login>, res: Response<LoginResponse>, next: NextFunction) => {
     login(req.body)
         .then((token) => {
             addResponseHeaders(res);
@@ -24,7 +25,7 @@ router.post("/login", (req: Request<Login>, res: Response<LoginResponse>, next: 
 
 /**
  * Express error handler for invalid login.
- * @param err
+ * @param errSignUp
  * @param req
  * @param res
  * @param next
@@ -40,12 +41,12 @@ export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req
 }
 
 // Signup
-// Route: /SignUp
+// Route: /signup
 // Input:
 //  email: string,
 //  displayName: string,
 //  password: string,
-router.post("/signup", (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
+router.post("/signup", cors(), (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
     createAccount(req.body)
         .then((token) => {
             addResponseHeaders(res);
