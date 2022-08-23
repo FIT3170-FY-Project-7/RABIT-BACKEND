@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { addResponseHeaders } from "../utils";
-import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./UserService";
+import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./FirebaseUserService";
 import cors from "cors";
 
 const router = Router();
