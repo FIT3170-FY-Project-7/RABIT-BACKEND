@@ -1,9 +1,8 @@
 import { config as dotenv_config } from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import { initializeApp } from 'firebase/app';
-import { badRequestErrorHandler } from "./RestErrorResponse";
-import UPLOAD_ROUTE from './Upload/UploadController';
-import USER_ROUTE, { invalidCredentialsErrorHandler, invalidSignUpErrorHandler } from './User/UserController';
+import bodyParser from "body-parser";
+import router from "./router";
 
 // Import env file
 let envConfig = dotenv_config();
@@ -42,15 +41,6 @@ app.use(bodyParser.json());
 app.use(router);
 
 const port = process.env.PORT;
-
-app.use("/upload", UPLOAD_ROUTE);
-app.use("/user", USER_ROUTE);
-
-// Add error handlers
-
-app.use(invalidCredentialsErrorHandler);
-app.use(invalidSignUpErrorHandler);
-app.use(badRequestErrorHandler);
 
 
 app.get("/", (req: Request, res: Response) => {

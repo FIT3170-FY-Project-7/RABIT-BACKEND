@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { RestErrorResponse } from '../RestErrorResponse';
+import RestErrorResponse from '../RestErrorResponse';
 
 /**
  * Request body for login.
