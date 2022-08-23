@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { addResponseHeaders } from "./Utils";
+import { addResponseHeaders } from "./utils";
 
 /**
  * API error responses, with structure mostly conforming to RFC 7807.

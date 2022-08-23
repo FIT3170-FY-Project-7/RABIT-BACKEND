@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import sample_service from "./UploadServices/UploadService";
-import { addResponseHeaders } from "../Utils";
+import { addResponseHeaders } from "../utils";
 const router = Router();
 
 // Route to this controller: /upload

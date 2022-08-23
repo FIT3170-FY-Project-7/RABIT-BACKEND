@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { addResponseHeaders } from "../Utils";
+import { addResponseHeaders } from "../utils";
 import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./UserService";
 import cors from "cors";
 
