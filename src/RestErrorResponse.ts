@@ -6,7 +6,7 @@ import { addResponseHeaders } from "./Utils";
  *
  * https://www.rfc-editor.org/rfc/rfc7807
  */
-export class RestErrorResponse {
+class RestErrorResponse {
     public readonly type: string;
     public readonly title: string;
     public readonly status: number;
@@ -44,3 +44,4 @@ export function badRequestErrorHandler(err: any, req: Request, res: Response, ne
     res.status(err.status);
     res.json(errObject);
 }
+export default RestErrorResponse;

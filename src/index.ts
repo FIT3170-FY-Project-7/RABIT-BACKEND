@@ -1,7 +1,6 @@
 import { config as dotenv_config } from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import { initializeApp } from 'firebase/app';
-
 import { badRequestErrorHandler } from "./RestErrorResponse";
 import UPLOAD_ROUTE from './Upload/UploadController';
 import USER_ROUTE, { invalidCredentialsErrorHandler, invalidSignUpErrorHandler } from './User/UserController';
@@ -13,6 +12,7 @@ if (!envConfig.parsed) {
   console.error(envConfig.error.stack ?? "No stack trace available");
   process.exit(1);
 }
+
 
 // Initialise Firebase
 const firebaseConfig =  {
@@ -37,6 +37,10 @@ initializeApp(firebaseConfig);
 // Initialise express server
 let app = express();
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(router);
+
 const port = process.env.PORT;
 
 app.use("/upload", UPLOAD_ROUTE);
@@ -53,5 +57,5 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server is running");
 });
 app.listen(port, () => {
-  console.info(`⚡️[server]: Brand new Server is running at http://localhost:${port}`);
+  console.log(`Backend is running at http://localhost:${port}`);
 });
