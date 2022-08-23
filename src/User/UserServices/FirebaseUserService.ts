@@ -1,10 +1,12 @@
+/**
+ * Authentication services using Firebase Auth.
+ */
 import {createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword} from 'firebase/auth';
 import {LoginData, SignUpData} from "../UserInterfaces/Auth";
 import {InvalidCredentialsError, InvalidSignUpError} from "../UserInterfaces/AuthError";
 
 /**
  * Log in a user.
- * @param auth Auth object for current instance of FirebaseApp.
  * @param credentials user credentials
  * @returns JWT of user credential
  */
@@ -25,9 +27,8 @@ export function login(credentials: LoginData): Promise<string> {
 
 /**
  * Signs up a user.
- * @param auth Auth object for current instance of FirebaseApp.
  * @param userDetails Object with details needed to sign up.
- * @returns JWT of user credential
+ * @returns JWT of newly created user
  */
 export function createAccount(userDetails: SignUpData): Promise<string> {
     let auth = getAuth()

@@ -1,3 +1,6 @@
+/**
+ * Error responses for authentication-related endpoints.
+ */
 import RestErrorResponse from "../../RestErrorResponse";
 
 /**

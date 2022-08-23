@@ -1,3 +1,6 @@
+/**
+ * Controller for user-related endpoints e.g. login
+ */
 import {NextFunction, Request, Response, Router} from "express";
 import {addResponseHeaders} from "../utils";
 import {createAccount, login} from "./UserServices/FirebaseUserService";
@@ -31,7 +34,7 @@ let corsOptions = {
 // Input:
 //  email: string,
 //  password: string,
-router.options("/login", cors(corsOptions));
+router.options("/login", cors(corsOptions)); // Handle CORS preflight
 router.post("/login", cors(corsOptions), validateBody(LoginDataValidator), (req: TypedRequestBody<LoginData>, res: Response<LoginResponse>, next: NextFunction) => {
     login(req.body)
         .then((token) => {
