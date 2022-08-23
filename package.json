@@ -19,6 +19,10 @@
     "typescript": "^4.7.4"
   },
   "scripts": {
-    "start": "nodemon src/index.ts"
+    "start": "nodemon src/index.ts",
+    "bootstrap-database": "ts-node ./database_schemas/bootstrapDatabase.ts",
+    "prelocal": "npm run bootstrap-database",
+    "local": "npm run start",
+    "postlocal": "docker rm -f rabit-dev-database"
   }
 }
