@@ -1,61 +1,14 @@
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import RestErrorResponse from '../RestErrorResponse';
+import {createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword} from 'firebase/auth';
+import {LoginData, SignUpData} from "../UserInterfaces/Auth";
+import {InvalidCredentialsError, InvalidSignUpError} from "../UserInterfaces/AuthError";
 
-/**
- * Request body for login.
- */
-export interface Login {
-    readonly email: string,
-    readonly password: string,
-}
-
-/**
- * Body of login response.
- */
-export interface LoginResponse {
-    readonly jwt: string
-}
-
-/**
- * Body of sign up response.
- */
-export interface SignUpResponse {
-    readonly jwt: string
-}
-
-/**
- * Request body for user sign up
- */
-export interface SignUpData {
-    readonly email: string,
-    readonly displayName: string,
-    readonly password: string
-}
-
-/**
- * Error class for invalid login.
- */
-export class InvalidCredentialsError extends RestErrorResponse {
-    constructor() {
-        super("/errors/invalid-credentials", "Invalid Credentials", 404, "Invalid email and/or password.", "/user/login")
-    }
-}
-
-/**
- * Error class for signup errors.
- */
-export class InvalidSignUpError extends RestErrorResponse {
-    constructor() {
-        super("/errors/invalid-signup", "Invalid Sign-Up", 404, "Email taken and/or invalid password.","/user/SignUp")
-    }
-}
 /**
  * Log in a user.
  * @param auth Auth object for current instance of FirebaseApp.
  * @param credentials user credentials
  * @returns JWT of user credential
  */
-export function login(credentials: Login): Promise<string> {
+export function login(credentials: LoginData): Promise<string> {
     let auth = getAuth()
     // Firebase function for login
     return signInWithEmailAndPassword(auth, credentials.email, credentials.password)

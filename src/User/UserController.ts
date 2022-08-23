@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { addResponseHeaders } from "../utils";
-import { createAccount, InvalidCredentialsError, InvalidSignUpError, login, Login, LoginResponse, SignUpData, SignUpResponse } from "./FirebaseUserService";
+import { createAccount, login } from "./UserServices/FirebaseUserService";
 import cors from "cors";
+import {LoginData, LoginResponse, SignUpData, SignUpResponse} from "./UserInterfaces/Auth";
+import {InvalidCredentialsError, InvalidSignUpError} from "./UserInterfaces/AuthError";
 
 const router = Router();
 
@@ -22,7 +24,7 @@ let corsOptions = {
 //  email: string,
 //  password: string,
 router.options("/login", cors(corsOptions));
-router.post("/login", cors(corsOptions), (req: Request<Login>, res: Response<LoginResponse>, next: NextFunction) => {
+router.post("/login", cors(corsOptions), (req: Request<LoginData>, res: Response<LoginResponse>, next: NextFunction) => {
     login(req.body)
         .then((token) => {
             addResponseHeaders(res);
@@ -41,7 +43,7 @@ router.post("/login", cors(corsOptions), (req: Request<Login>, res: Response<Log
  * @param next
  * @returns
  */
-export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<Login>, res: Response<InvalidCredentialsError>, next: NextFunction) {
+export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<LoginData>, res: Response<InvalidCredentialsError>, next: NextFunction) {
     if (res.headersSent || !(err instanceof InvalidCredentialsError)) {
         return next(err)
     }
