@@ -3,6 +3,11 @@ import express, {Request, Response} from "express";
 import bodyParser from "body-parser";
 import router from "./router";
 import initFirebase from "./Firebase";
+import {
+  badRequestErrorHandler,
+  invalidCredentialsErrorHandler,
+  invalidSignUpErrorHandler
+} from "./ExpressErrorHandlers";
 
 // Import env file
 let envConfig = dotenv_config();
@@ -17,13 +22,18 @@ initFirebase();
 
 // Initialise express server
 let app = express();
-app.use(express.json());
+// FIXME: this might be able to be replaced with the express equivalent instead, since body-parser is deprecated
+// https://github.com/expressjs/body-parser/commit/b7420f8dc5c8b17a277c9e50d72bbaf3086a3900
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(router);
 
-const port = process.env.PORT;
+// Add bad request error handler
+// NOTE: This needs to be initialised here. Otherwise, express would just 'ignore' the handler and sends a html output
+// instead
+app.use(badRequestErrorHandler);
 
+const port = process.env.PORT;
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Express + TypeScript Server is running");

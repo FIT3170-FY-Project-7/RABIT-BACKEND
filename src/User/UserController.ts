@@ -2,7 +2,16 @@ import {NextFunction, Request, Response, Router} from "express";
 import {addResponseHeaders} from "../utils";
 import {createAccount, login} from "./UserServices/FirebaseUserService";
 import cors from "cors";
-import {LoginData, LoginResponse, SignUpData, SignUpResponse} from "./UserInterfaces/Auth";
+import {
+    LoginData,
+    LoginDataValidator,
+    LoginResponse,
+    SignUpData,
+    SignUpDataValidator,
+    SignUpResponse
+} from "./UserInterfaces/Auth";
+import {TypedRequestBody} from "../TypedExpressIO";
+import validateBody from "../ValidateBody";
 
 const router = Router();
 
@@ -23,7 +32,7 @@ let corsOptions = {
 //  email: string,
 //  password: string,
 router.options("/login", cors(corsOptions));
-router.post("/login", cors(corsOptions), (req: Request<LoginData>, res: Response<LoginResponse>, next: NextFunction) => {
+router.post("/login", cors(corsOptions), validateBody(LoginDataValidator), (req: TypedRequestBody<LoginData>, res: Response<LoginResponse>, next: NextFunction) => {
     login(req.body)
         .then((token) => {
             addResponseHeaders(res);
@@ -41,7 +50,7 @@ router.post("/login", cors(corsOptions), (req: Request<LoginData>, res: Response
 //  displayName: string,
 //  password: string,
 router.options("/signup", cors(corsOptions));
-router.post("/signup", cors(corsOptions), (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
+router.post("/signup", cors(corsOptions), validateBody(SignUpDataValidator), (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
     createAccount(req.body)
         .then((token) => {
             addResponseHeaders(res);
