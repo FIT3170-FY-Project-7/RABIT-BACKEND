@@ -3,8 +3,12 @@ import { Router } from "express";
 import uploadController from "./Upload/UploadController";
 import shareController from "./Share/ShareController";
 import rawDataController from "./RawData/RawDataController";
-import USER_ROUTE, {invalidCredentialsErrorHandler, invalidSignUpErrorHandler} from "./User/UserController";
-import {badRequestErrorHandler} from "./RestErrorResponse";
+import USER_ROUTE from "./User/UserController";
+import {
+    badRequestErrorHandler,
+    invalidCredentialsErrorHandler,
+    invalidSignUpErrorHandler
+} from "./ExpressErrorHandlers";
 
 const router = Router();
 router.use("/upload", uploadController);

@@ -1,6 +1,3 @@
-import { NextFunction, Request, Response } from "express";
-import { addResponseHeaders } from "./utils";
-
 /**
  * API error responses, with structure mostly conforming to RFC 7807.
  *
@@ -29,19 +26,10 @@ class RestErrorResponse {
 /**
  * API error for malformed request
  */
-class BadRequestResponse extends RestErrorResponse {
+export class BadRequestResponse extends RestErrorResponse {
     constructor(detail: string, instance: string) {
         super("/errors/bad-request", "Bad Request", 400, detail, instance);
     }
 }
 
-export function badRequestErrorHandler(err: any, req: Request, res: Response, next: NextFunction) {
-    if (res.headersSent) {
-        return next(err)
-    }
-    let errObject = new BadRequestResponse(err.message, req.path);
-    addResponseHeaders(res);
-    res.status(err.status);
-    res.json(errObject);
-}
 export default RestErrorResponse;

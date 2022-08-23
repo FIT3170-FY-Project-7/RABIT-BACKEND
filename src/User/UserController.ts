@@ -1,9 +1,8 @@
-import { NextFunction, Request, Response, Router } from "express";
-import { addResponseHeaders } from "../utils";
-import { createAccount, login } from "./UserServices/FirebaseUserService";
+import {NextFunction, Request, Response, Router} from "express";
+import {addResponseHeaders} from "../utils";
+import {createAccount, login} from "./UserServices/FirebaseUserService";
 import cors from "cors";
 import {LoginData, LoginResponse, SignUpData, SignUpResponse} from "./UserInterfaces/Auth";
-import {InvalidCredentialsError, InvalidSignUpError} from "./UserInterfaces/AuthError";
 
 const router = Router();
 
@@ -35,23 +34,6 @@ router.post("/login", cors(corsOptions), (req: Request<LoginData>, res: Response
         })
 })
 
-/**
- * Express error handler for invalid login.
- * @param errSignUp
- * @param req
- * @param res
- * @param next
- * @returns
- */
-export function invalidCredentialsErrorHandler(err: InvalidCredentialsError, req: Request<LoginData>, res: Response<InvalidCredentialsError>, next: NextFunction) {
-    if (res.headersSent || !(err instanceof InvalidCredentialsError)) {
-        return next(err)
-    }
-    addResponseHeaders(res);
-    res.status(err.status);
-    res.json(err);
-}
-
 // Signup
 // Route: /signup
 // Input:
@@ -70,22 +52,5 @@ router.post("/signup", cors(corsOptions), (req: Request<SignUpData>, res: Respon
             next(e);
         })
 })
-
-/**
- * Express error handler for invalid signup.
- * @param err
- * @param req
- * @param res
- * @param next
- * @returns
- */
-export function invalidSignUpErrorHandler(err: InvalidSignUpError, req: Request<SignUpData>, res: Response<InvalidSignUpError>, next: NextFunction) {
-    if (res.headersSent || !(err instanceof InvalidSignUpError)) {
-        return next(err)
-    }
-    addResponseHeaders(res);
-    res.status(err.status);
-    res.json(err);
-}
 
 export default router;
