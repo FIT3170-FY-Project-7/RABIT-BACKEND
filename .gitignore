@@ -7,3 +7,6 @@ uploads/
 .idea
 
 data/
+
+# Environment variables
+.env
