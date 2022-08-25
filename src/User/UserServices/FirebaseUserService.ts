@@ -1,7 +1,7 @@
 /**
  * Authentication services using Firebase Auth.
  */
-import {createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword} from 'firebase/auth';
+import {createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, User} from 'firebase/auth';
 import {LoginData, SignUpData} from "../UserInterfaces/Auth";
 import {InvalidCredentialsError, InvalidSignUpError} from "../UserInterfaces/AuthError";
 
@@ -10,13 +10,13 @@ import {InvalidCredentialsError, InvalidSignUpError} from "../UserInterfaces/Aut
  * @param credentials user credentials
  * @returns JWT of user credential
  */
-export function login(credentials: LoginData): Promise<string> {
+export function login(credentials: LoginData): Promise<User> {
     let auth = getAuth()
     // Firebase function for login
     return signInWithEmailAndPassword(auth, credentials.email, credentials.password)
     .then((userCredential) => {
         // assign user object to return var, if login successful
-        return userCredential.user.getIdToken();
+        return userCredential.user;
     })
     .catch((error) => {
         // throw error if login failed
@@ -30,13 +30,13 @@ export function login(credentials: LoginData): Promise<string> {
  * @param userDetails Object with details needed to sign up.
  * @returns JWT of newly created user
  */
-export function createAccount(userDetails: SignUpData): Promise<string> {
+export function createAccount(userDetails: SignUpData): Promise<User> {
     let auth = getAuth()
     // Firebase auth function to create user
     return createUserWithEmailAndPassword(auth, userDetails.email, userDetails.password)
         .then((userCredential) => {
             // if sign successful, assign new user object to return var
-            return userCredential.user.getIdToken();
+            return userCredential.user;
         })
         .catch((error) => {
             // throw error if sign up didnt work

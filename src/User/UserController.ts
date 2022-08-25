@@ -5,6 +5,7 @@ import {NextFunction, Request, Response, Router} from "express";
 import {addResponseHeaders} from "../utils";
 import {createAccount, login} from "./UserServices/FirebaseUserService";
 import cors from "cors";
+import databaseConnection from "../databaseConnection";
 import {
     LoginData,
     LoginDataValidator,
@@ -36,12 +37,13 @@ let corsOptions = {
 //  password: string,
 router.options("/login", cors(corsOptions)); // Handle CORS preflight
 router.post("/login", cors(corsOptions), validateBody(LoginDataValidator), (req: TypedRequestBody<LoginData>, res: Response<LoginResponse>, next: NextFunction) => {
-    login(req.body)
+    login(req.body).then((user) => {return user.getIdToken()})
         .then((token) => {
             addResponseHeaders(res);
             return res.json({ jwt: token });
         })
         .catch((e) => {
+            res.status(500);
             next(e);
         })
 })
@@ -54,15 +56,44 @@ router.post("/login", cors(corsOptions), validateBody(LoginDataValidator), (req:
 //  password: string,
 router.options("/signup", cors(corsOptions));
 router.post("/signup", cors(corsOptions), validateBody(SignUpDataValidator), (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
+    let userVar, resVar:Response<SignUpResponse>;
+
     createAccount(req.body)
+        .then((user) => {
+            userVar = user;
+            return user.getIdToken()
+        })
         .then((token) => {
             addResponseHeaders(res);
             res.status(201);
-            return res.json({ jwt: token });
+            let resVar =  res.json({ jwt: token });
         })
         .catch((e) => {
+            console.error("Failed api call to firebase auth.", e);
+            res.status(500);
             next(e);
         })
+
+    databaseConnection.query(
+        `INSERT INTO rabit_user VALUES(?, ?, ?);`,
+        [
+            req.body.userVar.id,
+            req.body.displayName,
+            req.body.email
+        ],
+        (err) => {
+            if (err) {
+                console.error("Failed to insert into database", err);
+                res.status(500);
+                next(err)
+
+            } else {
+                const message = "User successfully created";
+                res.status(201);
+                return resVar;
+            }
+        }
+    );
 })
 
 export default router;
