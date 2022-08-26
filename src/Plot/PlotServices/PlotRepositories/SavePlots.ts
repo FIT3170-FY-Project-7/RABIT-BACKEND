@@ -18,7 +18,6 @@ import databaseConnection from "../../../databaseConnection";
 
 const insertCornerPlot = (plotData: SavePlotData) => {
     const corner_id = plotData.corner_id;
-    const plot_locked = true; // TODO: add this prop to the request body
     const current_datetime = new Date();
     const collection_id = plotData.collection_id;
     const user_id = plotData.user_id;
@@ -27,7 +26,6 @@ const insertCornerPlot = (plotData: SavePlotData) => {
         INSERT_CORNER_PLOT,
         [
             corner_id,
-            plot_locked,
             current_datetime,
             current_datetime,
             collection_id,
@@ -56,7 +54,6 @@ const insertParameterConfigs = (
         const parameter_name = parameterConfig.name;
         const domain_min = parameterConfig.domain[0];
         const domain_max = parameterConfig.domain[1];
-        const parameter_hidden = false; // TODO: determine whether this attribute should exist in DB
 
         databaseConnection.query(
             INSERT_PARAMETER_CONFIG,
@@ -65,7 +62,6 @@ const insertParameterConfigs = (
                 parameter_name,
                 domain_max,
                 domain_min,
-                parameter_hidden,
             ],
             (err) => {
                 if (err) {
