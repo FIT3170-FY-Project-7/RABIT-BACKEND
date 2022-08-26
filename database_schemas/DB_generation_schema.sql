@@ -32,7 +32,7 @@ ALTER TABLE rabit_user
 CREATE TABLE upload
   (
      upload_id       CHAR(36) NOT NULL,
-     user_id         CHAR(36) NOT NULL,
+     user_id         CHAR(28) NOT NULL,
      upload_datetime DATETIME
   );
 
@@ -76,7 +76,7 @@ CREATE TABLE corner_plot
      last_modified     DATETIME,
      date_created      DATETIME,
      collection_id     CHAR(36) NOT NULL,
-     user_id           CHAR(36) NOT NULL,
+     user_id           CHAR(28) NOT NULL,
      plot_size         NUMERIC(5) NOT NULL,
      subplot_size      NUMERIC(5) NOT NULL,
      margin_horizontal NUMERIC(3) NOT NULL,
@@ -173,4 +173,12 @@ ALTER TABLE dataset_config
 
 ALTER TABLE dataset_config
   ADD CONSTRAINT dataset_config_corner_plot FOREIGN KEY (corner_id) REFERENCES
-  corner_plot (corner_id) ON DELETE CASCADE;  
+  corner_plot (corner_id) ON DELETE CASCADE;
+
+ALTER TABLE dataset_sigma
+  ADD CONSTRAINT dataset_sigma_dataset_config FOREIGN KEY (dataconf_id) REFERENCES
+  dataset_config (dataconf_id) ON DELETE CASCADE;
+
+ALTER TABLE dataset_quantile
+  ADD CONSTRAINT dataset_quantile_dataset_config FOREIGN KEY (dataconf_id) REFERENCES
+  dataset_config (dataconf_id) ON DELETE CASCADE;
