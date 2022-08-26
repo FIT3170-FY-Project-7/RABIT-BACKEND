@@ -12,16 +12,18 @@ if (envVars.some((envVar) => !process.env[envVar])) {
   );
 }
 
-const databasePool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  multipleStatements: true,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+const databasePool = mysql
+  .createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    multipleStatements: true,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+  })
+  .promise();
 
 export const toDBDate = (date: Date) => date.toISOString().split("T")[0];
 
