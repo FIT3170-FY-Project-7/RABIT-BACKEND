@@ -1,5 +1,4 @@
 import { Router, Request, Response } from "express";
-
 import validateBody from "../ValidateBody";
 import { TypedRequestBody } from "../TypedExpressIO";
 import {
@@ -10,7 +9,7 @@ import { savePlotData } from "./PlotServices/PlotService";
 
 const router = Router();
 
-// Route to this controller: /share
+// Route to this controller: /plot
 
 /**
  * Generate a share link for a given CornerPlot

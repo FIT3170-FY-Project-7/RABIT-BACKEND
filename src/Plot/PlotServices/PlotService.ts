@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { SavePlotData } from "../PlotInterfaces/SavePlotData";
-import { uploadPlotData } from "./PlotRepositories/SavePlots";
+import { insertPlotData } from "./PlotRepositories/SavePlots";
 
 /**
  * Uploads parameters for re-generating a corner plot to the database
@@ -8,17 +8,25 @@ import { uploadPlotData } from "./PlotRepositories/SavePlots";
  * @returns The uploaded corner plot's UUID in the database
  */
 export const savePlotData = (plotData: SavePlotData): string => {
-
-    // Insert the user's id and generate a new uuid for the corner plot
+    // Generate a new uuid for the corner plot
     const cornerId = uuidv4();
-
-    // TODO: get user's id
-    // const userId = getUserIdSomehow()
     plotData.corner_id = cornerId;
-    // plotData.user_id = userId
+
+    // Generate a new uuid for each dataset configuration
+    plotData.dataset_configs.forEach((dataset_config) => {
+        dataset_config.dataconf_id = uuidv4();
+    });
 
     // Upload corner plot to database
-    uploadPlotData(plotData)
+    // TODO: determine whether this should return cornerId or call res.status(???).send(cornerId)
 
+    insertPlotData(plotData);
     return cornerId;
+
+    // try {
+    //     uploadPlotData(plotData)
+    //     res.status(200).send(cornerId)
+    // } catch (err) {
+    //     res.status(500).send(err)
+    // }
 };

@@ -34,9 +34,19 @@ const DatasetConfigValidator = t.type({
     quantiles: t.array(t.number),
 });
 
-export type DatasetConfig = t.TypeOf<typeof DatasetConfigValidator>;
+const DatasetConfigNonValidated = t.type({
+    dataconf_id: t.string
+})
+
+const DatasetConfigFull = t.intersection([
+    DatasetConfigValidator,
+    DatasetConfigNonValidated
+])
+
+export type DatasetConfig = t.TypeOf<typeof DatasetConfigFull>;
 
 export const SavePlotDataValidator = t.type({
+    user_id: t.string,
     collection_id: t.string,
     name: t.string,
     parameters: t.array(PlotParamsValidator),
@@ -44,17 +54,16 @@ export const SavePlotDataValidator = t.type({
     dataset_configs: t.array(DatasetConfigValidator),
 });
 
-const SavePlotDataOptional = t.type({
-    // Depending on whether the backend can get user_id at any time after authentication,
-    // user_id may need to be supplied in request body, and be added to the validator
-    // instead of optional params
-    user_id: t.string,
+// There is repetition here due to the awkward construction of dataset_configs between the validated and 
+// non-validated versions
+const SavePlotDataNonValidated = t.type({
     corner_id: t.string,
+    user_id: t.string,
+    collection_id: t.string,
+    name: t.string,
+    parameters: t.array(PlotParamsValidator),
+    plot_config: PlotConfigValidator,
+    dataset_configs: t.array(DatasetConfigFull),
 });
 
-const SavePlotDataFull = t.intersection([
-    SavePlotDataValidator,
-    SavePlotDataOptional,
-]);
-
-export type SavePlotData = t.TypeOf<typeof SavePlotDataFull>;
+export type SavePlotData = t.TypeOf<typeof SavePlotDataNonValidated>;
