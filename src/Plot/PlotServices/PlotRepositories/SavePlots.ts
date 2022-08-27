@@ -1,173 +1,202 @@
 import {
-    SavePlotData,
-    DatasetConfig,
-    PlotConfig,
-    PlotParams,
+  SavePlotData,
+  DatasetConfig,
+  PlotParams
 } from "../../PlotInterfaces/SavePlotData";
 import {
-    INSERT_CORNER_PLOT,
-    INSERT_PARAMETER_CONFIG,
-    INSERT_DATASET_CONFIG,
-    INSERT_DATASET_QUANTILE,
-    INSERT_DATASET_SIGMA,
+  INSERT_CORNER_PLOT,
+  INSERT_PARAMETER_CONFIG,
+  INSERT_DATASET_CONFIG,
+  INSERT_DATASET_QUANTILE,
+  INSERT_DATASET_SIGMA
 } from "./PlotQuerySQL";
 import databaseConnection from "../../../databaseConnection";
 
-// TODO: Determine what each DB-upload function should return on success
+/**
+ * Inserts data into the `corner_plot` table in the database
+ * @param plotData A corner plot's configuration details
+ */
+const insertCornerPlot = async (plotData: SavePlotData): Promise<void> => {
+  // Extract corner plot data
+  const corner_id = plotData.corner_id;
+  const current_datetime = new Date();
+  const collection_id = plotData.collection_id;
+  const user_id = plotData.user_id;
 
-const insertCornerPlot = (plotData: SavePlotData) => {
-    // Extract corner plot data
-    const corner_id = plotData.corner_id;
-    const current_datetime = new Date();
-    const collection_id = plotData.collection_id;
-    const user_id = plotData.user_id;
+  // Extract plot config data
+  const plot_config = plotData.plot_config;
+  const plot_size = plot_config.plot_size;
+  const subplot_size = plot_config.subplot_size;
+  const margin_horizontal = plot_config.margin.horizontal;
+  const margin_vertical = plot_config.margin.vertical;
+  const axis_size = plot_config.axis.size;
+  const axis_tick_size = plot_config.axis.tick_size;
+  const axis_ticks = plot_config.axis.ticks;
+  const background_color = plot_config.background_color;
 
-    // Extract plot config data
-    const plot_config = plotData.plot_config;
-    const plot_size = plot_config.plot_size;
-    const subplot_size = plot_config.subplot_size;
-    const margin_horizontal = plot_config.margin.horizontal;
-    const margin_vertical = plot_config.margin.vertical;
-    const axis_size = plot_config.axis.size;
-    const axis_tick_size = plot_config.axis.tick_size;
-    const axis_ticks = plot_config.axis.ticks;
-    const background_color = plot_config.background_color;
-
-    databaseConnection.query(
-        INSERT_CORNER_PLOT,
-        [
-            corner_id,
-            current_datetime,
-            current_datetime,
-            collection_id,
-            user_id,
-            plot_size,
-            subplot_size,
-            margin_horizontal,
-            margin_vertical,
-            axis_size,
-            axis_tick_size,
-            axis_ticks,
-            background_color,
-        ],
-        (err) => {
-            if (err) {
-                // TODO: Throw the error here?
-
-                console.log(err);
-            } else {
-                // Possibly remove this, make function return void?
-            }
-        }
-    );
-
-    // Return something here?
+  await databaseConnection.query(INSERT_CORNER_PLOT, [
+    corner_id,
+    current_datetime,
+    current_datetime,
+    collection_id,
+    user_id,
+    plot_size,
+    subplot_size,
+    margin_horizontal,
+    margin_vertical,
+    axis_size,
+    axis_tick_size,
+    axis_ticks,
+    background_color
+  ]);
 };
 
-const insertParameterConfigs = (
-    corner_id: string,
-    parameterConfigs: PlotParams[]
-) => {
-    parameterConfigs.forEach((parameterConfig) => {
-        // TODO: work out how to handle parameter name here (wrong parameter for DB)
-        const parameter_name = parameterConfig.name;
-        const domain_min = parameterConfig.domain[0];
-        const domain_max = parameterConfig.domain[1];
+/**
+ * Inserts the configuration details for all parameters of a given corner plot into the `parmeter_config`
+ * table in the database
+ * @param corner_id The UUID of the associated corner plot
+ * @param parameterConfigs An array of configuration details for each parameter
+ */
+const insertParameterConfigs = async (
+  corner_id: string,
+  parameterConfigs: PlotParams[]
+): Promise<void> => {
+  await Promise.all(
+    parameterConfigs.map(async (parameterConfig) => {
+      const parameter_id = parameterConfig.id;
+      const domain_min = parameterConfig.domain[0];
+      const domain_max = parameterConfig.domain[1];
 
-        databaseConnection.query(
-            INSERT_PARAMETER_CONFIG,
-            [corner_id, parameter_name, domain_max, domain_min],
-            (err) => {
-                if (err) {
-                    // TODO: Throw the error here?
-
-                    console.log(err);
-                }
-            }
-        );
-    });
-
-    // Possibly return something here, or void
+      await databaseConnection.query(INSERT_PARAMETER_CONFIG, [
+        corner_id,
+        parameter_id,
+        domain_max,
+        domain_min
+      ]);
+    })
+  );
 };
 
-const insertDatasetConfigs = (
-    corner_id: string,
-    datasetConfigs: DatasetConfig[]
-) => {
-    datasetConfigs.forEach((datasetConfig) => {
-        const dataconf_id = datasetConfig.dataconf_id;
-        const dataset_id = datasetConfig.dataset_id;
-        const bins = datasetConfig.bins;
-        const color = datasetConfig.color;
-        const line_width = datasetConfig.line_width;
-        const blur_radius = datasetConfig.blur_radius;
+/**
+ * Inserts the configuration details for all datasets used in a given corner plot into the
+ * `dataset_config`, `dataset_sigma`, and `dataset_quantile` tables in the database
+ * @param corner_id The UUID of the associated corner plot
+ * @param datasetConfigs An array of configuration details for each dataset
+ */
+const insertDatasetConfigs = async (
+  corner_id: string,
+  datasetConfigs: DatasetConfig[]
+): Promise<void> => {
+  await Promise.all(
+    datasetConfigs.map(async (datasetConfig) => {
+      const dataconf_id = datasetConfig.dataconf_id;
+      const file_id = datasetConfig.file_id;
+      const bins = datasetConfig.bins;
+      const color = datasetConfig.color;
+      const line_width = datasetConfig.line_width;
+      const blur_radius = datasetConfig.blur_radius;
 
-        databaseConnection.query(
-            INSERT_DATASET_CONFIG,
-            [
-                dataconf_id,
-                corner_id,
-                dataset_id,
-                bins,
-                color,
-                line_width,
-                blur_radius,
-            ],
-            (err) => {
-                // TODO: Throw the error here?
+      await databaseConnection.query(INSERT_DATASET_CONFIG, [
+        dataconf_id,
+        corner_id,
+        file_id,
+        bins,
+        color,
+        line_width,
+        blur_radius
+      ]);
 
-                console.log(err);
-            }
-        );
-
-        insertDatasetSigmas(dataconf_id, datasetConfig.sigmas);
-        insertDatasetQuantiles(dataconf_id, datasetConfig.quantiles);
-    });
-
-    // Return something here?
+      await insertDatasetSigmas(dataconf_id, datasetConfig.sigmas);
+      await insertDatasetQuantiles(dataconf_id, datasetConfig.quantiles);
+    })
+  );
 };
 
-const insertDatasetSigmas = (dataconf_id: string, sigmas: number[]) => {
-    sigmas.forEach((sigma) => {
-        databaseConnection.query(
-            INSERT_DATASET_SIGMA,
-            [dataconf_id, sigma],
-            (err) => {
-                // TODO: Throw the error here?
-
-                console.log(err);
-            }
-        );
-    });
-
-    // Return something here?
+/**
+ * Inserts the sigma values of a dataset configuration into the `dataset_sigma` table
+ * @param dataconf_id The UUID of the associated dataset configuration
+ * @param sigmas An array of sigma values to be inserted
+ */
+const insertDatasetSigmas = async (
+  dataconf_id: string,
+  sigmas: number[]
+): Promise<void> => {
+  await Promise.all(
+    sigmas.map(async (sigma) => {
+      await databaseConnection.query(INSERT_DATASET_SIGMA, [
+        dataconf_id,
+        sigma
+      ]);
+    })
+  );
 };
 
-const insertDatasetQuantiles = (dataconf_id: string, quantiles: number[]) => {
-    quantiles.forEach((quantile) => {
-        databaseConnection.query(
-            INSERT_DATASET_QUANTILE,
-            [dataconf_id, quantile],
-            (err) => {
-                // TODO: Throw the error here?
-
-                console.log(err);
-            }
-        );
-    });
-
-    // Return something here?
+/**
+ * Inserts the quantile values of a dataset configuration into the `dataset_quantile` table
+ * @param dataconf_id The UUID of the associated dataset configuration
+ * @param quantiles An array of quantile values to be inserted
+ */
+const insertDatasetQuantiles = async (
+  dataconf_id: string,
+  quantiles: number[]
+): Promise<void> => {
+  await Promise.all(
+    quantiles.map(async (quantile) => {
+      await databaseConnection.query(INSERT_DATASET_QUANTILE, [
+        dataconf_id,
+        quantile
+      ]);
+    })
+  );
 };
 
-export const insertPlotData = (plotData: SavePlotData) => {
-    // TODO: Determine whether try-catch block should be here or in the associated service
-    try {
-        const corner_id = plotData.corner_id;
+/**
+ * Inserts a completed corner plot's configuration details into the database
+ * @param plotData A corner plot's configuration details
+ * @returns A promise that resolves to the corner plot's UUID
+ */
+export const insertCornerPlotData = async (
+  plotData: SavePlotData
+): Promise<string> => {
+  const corner_id = plotData.corner_id;
 
-        insertCornerPlot(plotData);
-        insertParameterConfigs(corner_id, plotData.parameters);
-        insertDatasetConfigs(corner_id, plotData.dataset_configs);
+  await insertCornerPlot(plotData);
+  await insertParameterConfigs(corner_id, plotData.parameters);
+  await insertDatasetConfigs(corner_id, plotData.dataset_configs);
 
-        return corner_id;
-    } catch (err) {}
+  return corner_id;
+};
+
+export const getData = async () => {
+  // const [rows] = await databaseConnection.query(
+  //   // `
+  //   // SELECT * FROM rabit_user;
+  //   // `,
+  //   `
+  //   INSERT INTO rabit_user VALUES ('aRandomTwentyEightCharStrin3', 'temp name', 'null');
+  //   `
+  // );
+
+  await test1();
+  // await test2();
+};
+
+const test1 = async () => {
+  const start = 6;
+  const vals = [start, start + 1, start + 2];
+
+  await Promise.all(
+    vals.map(async (val) => {
+      await databaseConnection.query(
+        `INSERT INTO upload VALUES ('temp id ${val}', 'aRandomTwentyEightCharStrin3', ?)`,
+        [new Date()]
+      );
+    })
+  );
+};
+const test2 = async () => {
+  await databaseConnection.query(
+    `INSERT INTO upload VALUES ('another temp id 2', 'aRandomTwentyEightCharStrin3', ?)`,
+    [new Date()]
+  );
 };

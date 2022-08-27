@@ -2,10 +2,10 @@ import { Router, Request, Response } from "express";
 import validateBody from "../ValidateBody";
 import { TypedRequestBody } from "../TypedExpressIO";
 import {
-    SavePlotDataValidator,
-    SavePlotData,
+  SavePlotDataValidator,
+  SavePlotData
 } from "./PlotInterfaces/SavePlotData";
-import { savePlotData } from "./PlotServices/PlotService";
+import { savePlotData, testService } from "./PlotServices/PlotService";
 
 const router = Router();
 
@@ -15,21 +15,34 @@ const router = Router();
  * Generate a share link for a given CornerPlot
  */
 router.post(
-    "",
-    validateBody(SavePlotDataValidator),
-    (req: TypedRequestBody<SavePlotData>, res: Response) => {
-        res.status(200).send(savePlotData(req.body));
+  "",
+  validateBody(SavePlotDataValidator),
+  async (req: TypedRequestBody<SavePlotData>, res: Response) => {
+    try {
+      await savePlotData(req.body);
+      res.sendStatus(200);
+    } catch (e) {
+      console.error(e.message);
+      res.status(400).send("Error: The query could not be completed");
     }
+  }
 );
 
 /**
  * Get data for generating a shared corner plot, given its shared id
  */
-router.get("/:id", (req: Request, res: Response, next) => {
-    const id = req.params.id;
+router.get("/:id", async (req: Request, res: Response) => {
+  const id = req.params.id;
 
-    // TODO: Add some functionality here
-    res.send("In Progress");
+  // TODO: Add some functionality here
+  // res.send(await testService());
+  try {
+    await testService();
+    res.sendStatus(200);
+  } catch (e) {
+    console.error(e.message);
+    res.status(400).send("Error: The query could not be completed");
+  }
 });
 
 export default router;
