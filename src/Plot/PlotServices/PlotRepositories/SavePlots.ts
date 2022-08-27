@@ -6,7 +6,6 @@ import {
 } from "../../PlotInterfaces/SavePlotData";
 import {
     INSERT_CORNER_PLOT,
-    INSERT_PLOT_CONFIG,
     INSERT_PARAMETER_CONFIG,
     INSERT_DATASET_CONFIG,
     INSERT_DATASET_QUANTILE,
@@ -17,10 +16,22 @@ import databaseConnection from "../../../databaseConnection";
 // TODO: Determine what each DB-upload function should return on success
 
 const insertCornerPlot = (plotData: SavePlotData) => {
+    // Extract corner plot data
     const corner_id = plotData.corner_id;
     const current_datetime = new Date();
     const collection_id = plotData.collection_id;
     const user_id = plotData.user_id;
+
+    // Extract plot config data
+    const plot_config = plotData.plot_config;
+    const plot_size = plot_config.plot_size;
+    const subplot_size = plot_config.subplot_size;
+    const margin_horizontal = plot_config.margin.horizontal;
+    const margin_vertical = plot_config.margin.vertical;
+    const axis_size = plot_config.axis.size;
+    const axis_tick_size = plot_config.axis.tick_size;
+    const axis_ticks = plot_config.axis.ticks;
+    const background_color = plot_config.background_color;
 
     databaseConnection.query(
         INSERT_CORNER_PLOT,
@@ -30,6 +41,14 @@ const insertCornerPlot = (plotData: SavePlotData) => {
             current_datetime,
             collection_id,
             user_id,
+            plot_size,
+            subplot_size,
+            margin_horizontal,
+            margin_vertical,
+            axis_size,
+            axis_tick_size,
+            axis_ticks,
+            background_color,
         ],
         (err) => {
             if (err) {
@@ -57,12 +76,7 @@ const insertParameterConfigs = (
 
         databaseConnection.query(
             INSERT_PARAMETER_CONFIG,
-            [
-                corner_id,
-                parameter_name,
-                domain_max,
-                domain_min,
-            ],
+            [corner_id, parameter_name, domain_max, domain_min],
             (err) => {
                 if (err) {
                     // TODO: Throw the error here?
@@ -74,43 +88,6 @@ const insertParameterConfigs = (
     });
 
     // Possibly return something here, or void
-};
-
-const insertPlotConfig = (corner_id: string, plotConfig: PlotConfig) => {
-    const plot_size = plotConfig.plot_size;
-    const subplot_size = plotConfig.subplot_size;
-    const margin_horizontal = plotConfig.margin.horizontal;
-    const margin_vertical = plotConfig.margin.vertical;
-    const axis_size = plotConfig.axis.size;
-    const axis_tick_size = plotConfig.axis.tick_size;
-    const axis_ticks = plotConfig.axis.ticks;
-    const background_color = plotConfig.background_color;
-
-    databaseConnection.query(
-        INSERT_PLOT_CONFIG,
-        [
-            corner_id,
-            plot_size,
-            subplot_size,
-            margin_horizontal,
-            margin_vertical,
-            axis_size,
-            axis_tick_size,
-            axis_ticks,
-            background_color,
-        ],
-        (err) => {
-            if (err) {
-                // TODO: Throw the error here?
-
-                console.log(err);
-            } else {
-                // Possibly remove this, make function return void?
-            }
-        }
-    );
-
-    // Return something here?
 };
 
 const insertDatasetConfigs = (
@@ -189,7 +166,6 @@ export const insertPlotData = (plotData: SavePlotData) => {
 
         insertCornerPlot(plotData);
         insertParameterConfigs(corner_id, plotData.parameters);
-        insertPlotConfig(corner_id, plotData.plot_config);
         insertDatasetConfigs(corner_id, plotData.dataset_configs);
 
         return corner_id;
