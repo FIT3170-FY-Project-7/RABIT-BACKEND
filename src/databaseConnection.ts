@@ -1,18 +1,29 @@
 import mysql, { RowDataPacket } from "mysql2";
 import dotenv from "dotenv";
 
-if (!process.env.DB_HOST) {
-  dotenv.config();
+dotenv.config();
+
+const envVars = ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME"];
+if (envVars.some((envVar) => !process.env[envVar])) {
+  console.error(
+    `Please configure the database by specifying the environment variables ${envVars.join(
+      ", "
+    )}`
+  );
 }
 
-// Not using top-level async to avoid having to change configuration
-const databaseConnection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  multipleStatements: true,
-});
+const databasePool = mysql
+  .createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    multipleStatements: true,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+  })
+  .promise();
 
 export const toDBDate = (date: Date) => date.toISOString().split("T")[0];
 
@@ -32,4 +43,4 @@ export interface Upload extends RowDataPacket {
   upload_datetime: Date;
 }
 
-export default databaseConnection;
+export default databasePool;

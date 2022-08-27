@@ -1,95 +1,93 @@
 import { Router, Request, Response } from "express";
 import databaseConnection, {
-	toDBDate,
-	PlotCollection,
-	FilePointer,
-	Upload,
+  toDBDate,
+  PlotCollection,
+  FilePointer,
+  Upload
 } from "../databaseConnection";
 import { v4 as uuidv4 } from "uuid";
-import { readFile, saveFile } from "./storageController";
+import { readRawDataFile, upload } from "./storageController";
+import {
+  INSERT_UPLOAD,
+  INSERT_FILE,
+  GET_ALL_PLOT_COLLECTIONS,
+  GET_PLOT_COLLECTION
+} from "./uploadSql";
+import {
+  RawDataGet,
+  RawDataGetValidator,
+  RawDataList,
+  RawDataListValidator
+} from "./RawDataInterfaces/RawDataValidators";
+import { TypedRequestBody } from "src/TypedExpressIO";
+import validateBody from "../ValidateBody";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
 
 const router = Router();
 
-router.post("/", async (req: Request, res: Response) => {
-	const uploadId = uuidv4();
-	const collectionId = uuidv4();
+// Can't use validator as multer uses form data to submit files
+router.post("/", upload.any(), async (req: Request, res: Response) => {
+  if (!req.files || !req.body.name) {
+    res.status(400).send({ message: "Missing file or name parameters" });
+    return;
+  }
 
-	if (!req.body.file || !req.body.name) {
-		res.status(400).send({ message: "Missing file or name parameters" });
-		return;
-	}
+  const collectionId = uuidv4();
+  const fileIds: string[] | undefined = Array.prototype.map.call(
+    req?.files,
+    (file: Express.Multer.File) => file.filename.split(".")[0]
+  );
+  // As a temporary measure until the DB is updated to the latest schema
+  const uploadId = fileIds[0]; // const uploadId = uuidv4();
 
-	saveFile(uploadId, req.body.file);
-	databaseConnection.query(
-		`INSERT INTO upload VALUES (?, ?, ?); 
-    INSERT INTO plot_collection VALUES (?, ?);
-    INSERT INTO file_pointer VALUES (?, ?);
-    `,
-		[
-			uploadId,
-			TEMP_USER,
-			toDBDate(new Date()),
-			collectionId,
-			req.body.name,
-			uploadId,
-			collectionId,
-		],
-		(err) => {
-			if (err) {
-				const message = "Failed to insert into database";
-				console.error(message, err);
-				res.status(500).send({ message });
-			} else {
-				res.send({ id: collectionId });
-			}
-		}
-	);
+  // Insert plot collection and upload
+  await databaseConnection.query(INSERT_UPLOAD, [
+    uploadId,
+    TEMP_USER,
+    toDBDate(new Date()),
+    collectionId,
+    req.body.name
+  ]);
+
+  // Insert file pointers simultaneously
+  const fileInserts = fileIds?.map((fileId) =>
+    databaseConnection.query(INSERT_FILE, [uploadId, collectionId])
+  );
+  await Promise.all(fileInserts);
+
+  res.status(200).send({ id: collectionId });
 });
 
-router.get("/", async (req: Request, res: Response) => {
-	databaseConnection.query(
-		`SELECT * FROM plot_collection`,
-		(err, rawDataList, fields) => {
-			if (err) {
-				const message = "Failed to fetch from database";
-				console.error(message, err);
-				res.status(500).send({ message });
-			} else {
-				res.send(rawDataList);
-			}
-		}
-	);
-});
+router.get(
+  "/",
+  validateBody(RawDataListValidator),
+  async (req: TypedRequestBody<RawDataList>, res: Response) => {
+    const [rawDataList] = await databaseConnection.query(
+      GET_ALL_PLOT_COLLECTIONS
+    );
 
-router.get("/:id", async (req: Request, res: Response) => {
-	databaseConnection.query<(PlotCollection | FilePointer | Upload)[]>(
-		`SELECT * FROM (plot_collection p JOIN file_pointer f on p.collection_id = f.collection_id) JOIN upload u ON f.upload_id = u.upload_id WHERE p.collection_id = ?;`,
-		[req.params.id],
-		(err, rows) => {
-			if (err) {
-				const message = "Failed to fetch from database";
-				console.error(message, err);
-				res.status(500).send({ message });
-			} else {
-				if (rows?.length === 0) {
-					res.status(404).send({
-						message:
-							"Plot collection with given id doesn't not exist",
-					});
-				}
-				const row = rows[0];
-				const data = readFile(row.upload_id);
-				res.send({
-					id: req.params.id,
-					name: row.collection_name,
-					data,
-				});
-			}
-		}
-	);
-});
+    res.send(rawDataList);
+  }
+);
+
+router.get(
+  "/:id",
+  validateBody(RawDataGetValidator),
+  async (req: TypedRequestBody<RawDataGet>, res: Response) => {
+    const [rows] = await databaseConnection.query<
+      (PlotCollection | FilePointer | Upload)[]
+    >(GET_PLOT_COLLECTION, [req.params.id]);
+    const row = rows[0];
+
+    const data = await readRawDataFile(row.upload_id);
+    res.send({
+      id: req.params.id,
+      name: row.collection_name,
+      data
+    });
+  }
+);
 
 export default router;
