@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import { SavePlotData } from "../PlotInterfaces/SavePlotData";
-import { getData, insertCornerPlotData } from "./PlotRepositories/SavePlots";
+import { insertCornerPlotData } from "./PlotRepositories/SavePlots";
+import { getCornerPlotData } from "./PlotRepositories/RetrievePlot";
+import { FullCornerPlotConfig } from "../PlotInterfaces/GetPlotDataDTOs";
 
 /**
  * Uploads configuration details for a corner plot into the database, so that the corner plot can later
@@ -23,6 +25,8 @@ export const savePlotData = (plotData: SavePlotData): Promise<string> => {
   return insertCornerPlotData(plotData);
 };
 
-export const testService = () => {
-  return getData();
+export const getPlotData = (
+  cornerId: string
+): Promise<FullCornerPlotConfig> => {
+  return getCornerPlotData(cornerId);
 };

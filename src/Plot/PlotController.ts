@@ -1,11 +1,12 @@
 import { Router, Request, Response } from "express";
 import validateBody from "../ValidateBody";
-import { TypedRequestBody } from "../TypedExpressIO";
+import { TypedRequestBody, TypedResponse } from "../TypedExpressIO";
 import {
   SavePlotDataValidator,
   SavePlotData
 } from "./PlotInterfaces/SavePlotData";
-import { savePlotData, testService } from "./PlotServices/PlotService";
+import { savePlotData, getPlotData } from "./PlotServices/PlotService";
+import { FullCornerPlotConfig } from "./PlotInterfaces/GetPlotDataDTOs";
 
 const router = Router();
 
@@ -31,18 +32,16 @@ router.post(
 /**
  * Get data for generating a shared corner plot, given its shared id
  */
-router.get("/:id", async (req: Request, res: Response) => {
-  const id = req.params.id;
-
-  // TODO: Add some functionality here
-  // res.send(await testService());
-  try {
-    await testService();
-    res.sendStatus(200);
-  } catch (e) {
-    console.error(e.message);
-    res.status(400).send("Error: The query could not be completed");
+router.get(
+  "/:id",
+  async (req: Request, res: TypedResponse<FullCornerPlotConfig>) => {
+    try {
+      res.status(200).send(await getPlotData(req.params.id));
+    } catch (e) {
+      console.error(e.message);
+      res.status(404).send("Error: Corner plot not found");
+    }
   }
-});
+);
 
 export default router;

@@ -1,5 +1,5 @@
 import * as t from "io-ts";
-import { nonEmptyArray } from "io-ts-types";
+import { nonEmptyArray, date } from "io-ts-types";
 
 const PlotParamsValidator = t.type({
   id: t.string,
@@ -62,6 +62,8 @@ const SavePlotDataNonValidated = t.type({
   user_id: t.string,
   collection_id: t.string,
   // name: t.string,
+  date_created: date,
+  last_modified: date,
   parameters: nonEmptyArray(PlotParamsValidator),
   plot_config: PlotConfigValidator,
   dataset_configs: nonEmptyArray(DatasetConfigFull)

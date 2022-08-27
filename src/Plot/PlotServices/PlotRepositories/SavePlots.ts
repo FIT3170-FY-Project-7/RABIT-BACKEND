@@ -19,7 +19,8 @@ import databaseConnection from "../../../databaseConnection";
 const insertCornerPlot = async (plotData: SavePlotData): Promise<void> => {
   // Extract corner plot data
   const corner_id = plotData.corner_id;
-  const current_datetime = new Date();
+  const last_modified = new Date();
+  const date_created = plotData.date_created || last_modified;
   const collection_id = plotData.collection_id;
   const user_id = plotData.user_id;
 
@@ -36,8 +37,8 @@ const insertCornerPlot = async (plotData: SavePlotData): Promise<void> => {
 
   await databaseConnection.query(INSERT_CORNER_PLOT, [
     corner_id,
-    current_datetime,
-    current_datetime,
+    last_modified,
+    last_modified,
     collection_id,
     user_id,
     plot_size,
@@ -165,38 +166,4 @@ export const insertCornerPlotData = async (
   await insertDatasetConfigs(corner_id, plotData.dataset_configs);
 
   return corner_id;
-};
-
-export const getData = async () => {
-  // const [rows] = await databaseConnection.query(
-  //   // `
-  //   // SELECT * FROM rabit_user;
-  //   // `,
-  //   `
-  //   INSERT INTO rabit_user VALUES ('aRandomTwentyEightCharStrin3', 'temp name', 'null');
-  //   `
-  // );
-
-  await test1();
-  // await test2();
-};
-
-const test1 = async () => {
-  const start = 6;
-  const vals = [start, start + 1, start + 2];
-
-  await Promise.all(
-    vals.map(async (val) => {
-      await databaseConnection.query(
-        `INSERT INTO upload VALUES ('temp id ${val}', 'aRandomTwentyEightCharStrin3', ?)`,
-        [new Date()]
-      );
-    })
-  );
-};
-const test2 = async () => {
-  await databaseConnection.query(
-    `INSERT INTO upload VALUES ('another temp id 2', 'aRandomTwentyEightCharStrin3', ?)`,
-    [new Date()]
-  );
 };

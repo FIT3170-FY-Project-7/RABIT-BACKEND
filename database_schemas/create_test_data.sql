@@ -11,7 +11,9 @@ INSERT INTO plot_collection
 VALUES ('collection_id', 'temp title', NULL);
 
 INSERT INTO file_pointer
-VALUES ('file_id', 'upload id', 'collection_id');
+VALUES ('file_id', 'upload id', 'collection_id'),
+       ('file id 2', 'upload_id', 'collection_id');
 
 INSERT INTO base_parameter
-VALUES ('param id', 'name', 'file_id');
+VALUES ('param id', 'name', 'file_id'),
+       ('param id 2', 'name 2', 'file_id');
