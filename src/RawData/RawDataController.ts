@@ -48,12 +48,13 @@ router.post("/", upload.any(), async (req: Request, res: Response) => {
         TEMP_USER,
         toDBDate(new Date()),
         collectionId,
-        req.body.name
+        req.body.name,
+        null
     ]);
 
     // Insert file pointers simultaneously
     const fileInserts = fileIds?.map((fileId) =>
-        databaseConnection.query(INSERT_FILE, [uploadId, collectionId])
+        databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
     );
     await Promise.all(fileInserts);
 
@@ -79,13 +80,34 @@ router.get(
         const [rows] = await databaseConnection.query<
             (PlotCollection | FilePointer | Upload)[]
         >(GET_PLOT_COLLECTION, [req.params.id]);
-        const row = rows[0];
 
-        const data = await readRawDataFile(row.upload_id);
+        const rawDataFiles = rows.map(row => readRawDataFile(row.file_id))
+        const data = await Promise.all(rawDataFiles);
+
+        const calculateParameters = (data): string[] => {
+            // get all parameters that are common between all the datasets
+            return data.reduce((acc: string[], curr) => {
+                // First iteration, include all keys of first dataset
+                if (acc === null) {
+                    return Object.keys(curr.posterior.content)
+                }
+
+                // If acc has a key that is not in dataset, remove it
+                for (const key of acc){
+                    if (!curr.posterior.content[key]) {
+                        const index = acc.indexOf(key);
+                        acc.splice(index, 1);
+                    }
+                }
+                return acc
+            }, null) ?? []
+        }
+
         res.send({
             id: req.params.id,
-            name: row.collection_name,
-            data
+            name: rows[0].collection_name,
+            data: data,
+            parameters: calculateParameters(data),
         });
     }
 );
