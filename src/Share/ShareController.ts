@@ -4,7 +4,7 @@ import validateBody from "../ValidateBody";
 import { TypedRequestBody } from "../TypedExpressIO";
 import {
     ShareLinkGenerateValidator,
-    ShareLinkGenerate,
+    ShareLinkGenerate
 } from "./ShareInterfaces/ShareLinkGenerate";
 import { generateShareURL } from "./ShareServices/ShareService";
 

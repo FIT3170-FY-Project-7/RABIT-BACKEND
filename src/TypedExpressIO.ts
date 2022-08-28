@@ -16,5 +16,5 @@ export interface TypedRequest<T, U extends Query> extends Request {
 }
 
 export interface TypedResponse<ResBody> extends Response {
-    json: Send<ResBody, this>
+    json: Send<ResBody, this>;
 }
