@@ -11,7 +11,8 @@ import {
   INSERT_UPLOAD,
   INSERT_FILE,
   GET_ALL_PLOT_COLLECTIONS,
-  GET_PLOT_COLLECTION
+  GET_PLOT_COLLECTION,
+  GET_COLLECTIONS_FOR_USER
 } from "./uploadSql";
 import {
   RawDataGet,
@@ -89,5 +90,15 @@ router.get(
     });
   }
 );
+
+router.get("/user/:id", 
+validateBody(RawDataGetValidator),
+async (req: TypedRequestBody<RawDataList>, res: Response) => {
+  const [plotCollections] = await databaseConnection.query(
+    GET_COLLECTIONS_FOR_USER
+  );
+
+  res.send(plotCollections);
+})
 
 export default router;
