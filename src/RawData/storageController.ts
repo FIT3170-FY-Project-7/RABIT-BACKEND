@@ -39,6 +39,6 @@ export const readRawDataFile = async (filename: string) => {
         const data = await readFilePromise(filepath, "utf8");
         return JSON.parse(data);
     } catch (err) {
-        console.error("Failed to write file", err);
+        console.error("Failed to read file", err);
     }
 };

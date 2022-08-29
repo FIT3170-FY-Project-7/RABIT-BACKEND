@@ -70,7 +70,8 @@ export const getPosteriorData = async (
   const filteredPosteriors = filterPosteriorsFromDataset(data, queryPosteriors);
 
   return {
-    name: row.collection_name,
+    title: row.collection_title,
+    description: row.collection_description,
     posteriors: filteredPosteriors
   };
 };
@@ -93,7 +94,8 @@ export const getMultipleRawData = async (collection_id: string) => {
   const common_parameters = calculateParameters(data);
 
   return {
-    name: rows[0].collection_name,
+    title: rows[0].collection_title,
+    description: rows[0].collection_description,
     data: data,
     parameters: common_parameters
   };
