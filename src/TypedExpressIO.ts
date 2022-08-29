@@ -3,16 +3,16 @@ import { Request, Response } from "express";
 import { Query, Send } from "express-serve-static-core";
 
 export interface TypedRequestBody<T> extends Request {
-    body: T;
+  body: T;
 }
 
 export interface TypedRequestQuery<T extends Query> extends Request {
-    query: T;
+  query: T;
 }
 
 export interface TypedRequest<T, U extends Query> extends Request {
-    body: T;
-    query: U;
+  body: T;
+  query: U;
 }
 
 export interface TypedResponse<ResBody> extends Response {

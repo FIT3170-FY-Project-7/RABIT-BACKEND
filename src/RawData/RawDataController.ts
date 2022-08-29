@@ -19,8 +19,10 @@ import {
     RawDataList,
     RawDataListValidator
 } from "./RawDataInterfaces/RawDataValidators";
-import { TypedRequestBody } from "src/TypedExpressIO";
+import { TypedRequestBody, TypedRequestQuery } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
+import { parameterParse } from "../Request/RequestParse";
+import { RawDataRequestQuery } from "src/Request/Request";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -110,6 +112,35 @@ router.get(
             parameters: calculateParameters(data),
         });
     }
+);
+
+router.get(
+  "/:id/posteriors",
+  validateBody(RawDataGetValidator),
+  async (req: TypedRequestQuery<RawDataRequestQuery>, res: Response) => {
+    const [rows] = await databaseConnection.query<
+      (PlotCollection | FilePointer | Upload)[]
+    >(GET_PLOT_COLLECTION, [req.params.id]);
+    const row = rows[0];
+    const data = await readRawDataFile(row.upload_id);
+    const posteriors = JSON.parse(data).posterior.content;
+    const queryPosteriors = parameterParse(req.query?.parameters);
+    const filteredPosteriors = queryPosteriors
+      ? queryPosteriors.reduce(
+          (obj, key) => ({
+            ...obj,
+            [key]: posteriors[key]
+          }),
+          {}
+        )
+      : posteriors;
+
+    res.send({
+      id: req.params.id,
+      name: row.collection_name,
+      posteriors: filteredPosteriors
+    });
+  }
 );
 
 export default router;
