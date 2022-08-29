@@ -4,6 +4,7 @@ import router from "./router";
 import cors from "cors";
 import initFirebase from "./Firebase";
 import {badRequestErrorHandler} from "./ExpressErrorHandlers";
+import express from "express";
 
 // Import env file
 let envConfig = dotenv_config();
