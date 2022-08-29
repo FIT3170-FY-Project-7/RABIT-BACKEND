@@ -38,18 +38,19 @@ const router = Router();
 
 // Can't use validator as multer uses form data to submit files
 router.post("/", upload.any(), async (req: Request, res: Response) => {
-  if (!req.files || !req.body.name) {
-    res.status(400).send({ message: "Missing file or name parameters" });
+  if (!req.files || !req.body.title || !req.body.description) {
+    res.status(400).send({
+      message: "Missing file, name or description parameters"
+    });
     return;
   }
 
+  const uploadId = uuidv4();
   const collectionId = uuidv4();
   const fileIds: string[] | undefined = Array.prototype.map.call(
     req?.files,
     (file: Express.Multer.File) => file.filename.split(".")[0]
   );
-  // As a temporary measure until the DB is updated to the latest schema
-  const uploadId = fileIds[0]; // const uploadId = uuidv4();
 
   // Insert plot collection and upload
   await databaseConnection.query(INSERT_UPLOAD, [
@@ -57,8 +58,8 @@ router.post("/", upload.any(), async (req: Request, res: Response) => {
     TEMP_USER,
     toDBDate(new Date()),
     collectionId,
-    req.body.name,
-    null
+    req.body.title,
+    req.body.description
   ]);
 
   // Insert file pointers simultaneously

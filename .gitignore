@@ -10,3 +10,6 @@ data/
 
 # Environment variables
 .env
+
+# Firebase service account file
+service-account-file.json
