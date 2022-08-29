@@ -30,6 +30,7 @@ export const toDBDate = (date: Date) => date.toISOString().split("T")[0];
 export interface PlotCollection extends RowDataPacket {
     collection_id: string;
     collection_name: string;
+    collection_description: string;
 }
 
 export interface FilePointer extends RowDataPacket {

@@ -36,7 +36,8 @@ export const filterPosteriorsFromDataset = (
   data: any,
   requestedPosteriors: string[]
 ) => {
-  const posteriors = JSON.parse(data).posterior.content;
+  const posteriors = data.posterior.content;
+
   return requestedPosteriors
     ? requestedPosteriors.reduce(
         (obj, key) => ({
@@ -49,6 +50,8 @@ export const filterPosteriorsFromDataset = (
 };
 
 /**
+ * @deprecated Use `GetMultiplePosteriorData()` instead.
+ *
  * Gets the data for a given plot collection filtered by an array of parameters. Only works when the
  * plot collection in question uses a single file/dataset
  * @param collection_id The UUID of a plot collection
@@ -97,4 +100,35 @@ export const getMultipleRawData = async (collection_id: string) => {
     data: data,
     parameters: common_parameters
   };
+};
+
+/**
+ * Gets the data for a given plot collection filtered by an array of parameters.
+ * Also works when the plot collection contains multiple files/datasets
+ * @param collection_id The UUID of the plot collection
+ * @param requestedPosteriors An array of parameter names
+ * @returns The plot collection's name and posterior data for each dataset, containing only
+ * the requested parameters
+ */
+export const getMultiplePosteriorData = async (
+  collection_id: string,
+  requestedPosteriors: string[]
+) => {
+  // Get the files contained in the plot collection
+  const rows = await getPlotCollectionDataset(collection_id);
+
+  // Get the full raw data for each file
+  const rawDataFiles = rows.map((row) => readRawDataFile(row.file_id));
+  const unfilteredDatasets = await Promise.all(rawDataFiles);
+
+  // Filter the data from the file according to the requested posteriors
+  const filteredDatasets = unfilteredDatasets.map((dataset) => {
+    return filterPosteriorsFromDataset(dataset, requestedPosteriors);
+  });
+
+  return {
+    title: rows[0].collection_name,
+    description: rows[0].collection_description,
+    data: filteredDatasets
+  }
 };
