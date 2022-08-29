@@ -6,7 +6,7 @@ import {
   SavePlotData
 } from "./PlotInterfaces/SavePlotData";
 import { savePlotData, getPlotData } from "./PlotServices/PlotService";
-import { FullCornerPlotConfig } from "./PlotInterfaces/GetPlotDataDTOs";
+import { FullCornerPlotData } from "./PlotInterfaces/GetPlotDataDTOs";
 
 const router = Router();
 
@@ -20,8 +20,7 @@ router.post(
   validateBody(SavePlotDataValidator),
   async (req: TypedRequestBody<SavePlotData>, res: Response) => {
     try {
-      await savePlotData(req.body);
-      res.sendStatus(200);
+      res.status(200).send(await savePlotData(req.body));
     } catch (e) {
       console.error(e.message);
       res.status(400).send("Error: The query could not be completed");
@@ -34,7 +33,7 @@ router.post(
  */
 router.get(
   "/:id",
-  async (req: Request, res: TypedResponse<FullCornerPlotConfig>) => {
+  async (req: Request, res: TypedResponse<FullCornerPlotData>) => {
     try {
       res.status(200).send(await getPlotData(req.params.id));
     } catch (e) {

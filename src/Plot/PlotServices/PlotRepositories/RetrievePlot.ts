@@ -4,7 +4,7 @@ import {
   DatasetConfigRow,
   DatasetQuantileRow,
   DatasetSigmaRow,
-  FullCornerPlotConfig
+  FullCornerPlotData
 } from "../../PlotInterfaces/GetPlotDataDTOs";
 import {
   GET_CORNER_PLOT_FROM_ID,
@@ -120,8 +120,8 @@ const constructOutputObject = (
   cornerPlotConfig: CornerPlotRow,
   parameterConfigs: ParameterConfigRow[],
   datasetConfigs: DatasetConfigRow[]
-): FullCornerPlotConfig => {
-  const fullPlotData: FullCornerPlotConfig = {
+): FullCornerPlotData => {
+  const fullPlotData: FullCornerPlotData = {
     corner_id: cornerPlotConfig.corner_id,
     last_modified: cornerPlotConfig.last_modified,
     date_created: cornerPlotConfig.date_created,
@@ -150,7 +150,8 @@ const constructOutputObject = (
         line_width: datasetConfig.line_width,
         blur_radius: datasetConfig.blur_radius,
         quantiles: datasetConfig.quantiles,
-        sigmas: datasetConfig.sigmas
+        sigmas: datasetConfig.sigmas,
+        data: {}
       };
     }),
     parameter_configs: parameterConfigs.map((parameterConfig) => {
@@ -173,7 +174,7 @@ const constructOutputObject = (
  */
 export const getCornerPlotData = async (
   corner_id: string
-): Promise<FullCornerPlotConfig> => {
+): Promise<FullCornerPlotData> => {
   // Perform database queries to retrieve the relevant data from each table
   const cornerPlotConfig = await getCornerPlotConfig(corner_id);
   const parameterConfigs = await getParameterConfigs(corner_id);

@@ -15,7 +15,7 @@ if (!envConfig.parsed) {
 }
 
 // Initialise Firebase
-initFirebase();
+// initFirebase();
 
 // Initialise express server
 let app = express();

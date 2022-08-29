@@ -44,7 +44,7 @@ export interface CornerPlotRow extends RowDataPacket {
 }
 
 // TODO: update this to include place for the actual posterior data
-export interface FullCornerPlotConfig {
+export interface FullCornerPlotData {
   corner_id: string;
   last_modified: Date;
   date_created: Date;
@@ -73,6 +73,7 @@ export interface FullCornerPlotConfig {
     blur_radius: number;
     sigmas: number[];
     quantiles: number[];
+    data: Object
   }[];
   parameter_configs: {
     parameter_id: string;

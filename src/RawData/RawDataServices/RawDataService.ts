@@ -129,7 +129,7 @@ export const getMultiplePosteriorData = async (
   });
 
   return {
-    title: rows[0].collection_name,
+    title: rows[0].collection_title,
     description: rows[0].collection_description,
     data: filteredDatasets
   }
