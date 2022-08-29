@@ -6,7 +6,6 @@ import {invalidCredentialsErrorHandler, invalidSignUpErrorHandler} from "./Expre
 import userController from "./User/UserController";
 
 const router = Router();
-router.use("/upload", uploadController);
 router.use("/user", userController);
 router.use("/share", shareController);
 router.use("/raw-data", rawDataController);

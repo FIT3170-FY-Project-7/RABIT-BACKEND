@@ -1,9 +1,9 @@
 import {config as dotenv_config} from "dotenv";
-import express, {Request, Response} from "express";
 import bodyParser from "body-parser";
 import router from "./router";
 import cors from "cors";
 import initFirebase from "./Firebase";
+import {badRequestErrorHandler} from "./ExpressErrorHandlers";
 
 // Import env file
 let envConfig = dotenv_config();
