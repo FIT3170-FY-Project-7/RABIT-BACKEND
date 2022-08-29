@@ -106,8 +106,6 @@ router.get(
     const collection_id = req.params.id;
     const queryPosteriors = parameterParse(req.query?.parameters);
 
-    console.log(queryPosteriors);
-
     // Return the filtered posterior data
     res.status(200).send({
       id: collection_id,
