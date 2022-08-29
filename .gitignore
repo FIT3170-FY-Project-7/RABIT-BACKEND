@@ -1,8 +1,12 @@
 # Node configurations
 node_modules/
 dist/
+uploads/
 
 # Jetbrains IDE configurations
 .idea
 
 data/
+
+# Environment variables
+.env

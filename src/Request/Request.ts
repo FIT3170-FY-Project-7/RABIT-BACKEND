@@ -1,11 +1,3 @@
-export interface RequestParams {
-	id: string;
-}
+import { Query } from "express-serve-static-core";
 
-export interface ResponseBody {}
-
-export interface RequestBody {}
-
-export interface RequestQuery {
-	parameters: string;
-}
+export type RawDataRequestQuery = Query & { parameters: string };
