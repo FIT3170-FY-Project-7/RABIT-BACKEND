@@ -1,10 +1,4 @@
-import databaseConnection, {
-  FilePointer,
-  PlotCollection,
-  Upload
-} from "../../databaseConnection";
 import { readRawDataFile } from "../storageController";
-import { GET_PLOT_COLLECTION } from "../uploadSql";
 import { getPlotCollectionDataset } from "./RawDataRepositories/RetrieveRawData";
 
 /**
