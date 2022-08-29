@@ -19,8 +19,16 @@ import {
   RawDataList,
   RawDataListValidator
 } from "./RawDataInterfaces/RawDataValidators";
-import { TypedRequestBody } from "src/TypedExpressIO";
+import { TypedRequestBody, TypedRequestQuery } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
+import { parameterParse } from "../Request/RequestParse";
+import { RawDataRequestQuery } from "src/Request/Request";
+import {
+  calculateParameters,
+  filterPosteriorsFromDataset,
+  getMultipleRawData,
+  getPosteriorData
+} from "./RawDataServices/RawDataService";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -48,12 +56,13 @@ router.post("/", upload.any(), async (req: Request, res: Response) => {
     TEMP_USER,
     toDBDate(new Date()),
     collectionId,
-    req.body.name
+    req.body.name,
+    null
   ]);
 
   // Insert file pointers simultaneously
   const fileInserts = fileIds?.map((fileId) =>
-    databaseConnection.query(INSERT_FILE, [uploadId, collectionId])
+    databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
   );
   await Promise.all(fileInserts);
 
@@ -76,16 +85,29 @@ router.get(
   "/:id",
   validateBody(RawDataGetValidator),
   async (req: TypedRequestBody<RawDataGet>, res: Response) => {
-    const [rows] = await databaseConnection.query<
-      (PlotCollection | FilePointer | Upload)[]
-    >(GET_PLOT_COLLECTION, [req.params.id]);
-    const row = rows[0];
+    // Extract request data
+    const collection_id = req.params.id;
 
-    const data = await readRawDataFile(row.upload_id);
-    res.send({
-      id: req.params.id,
-      name: row.collection_name,
-      data
+    // Return the raw data for each file and the set of usable parameters for the plot collection
+    res.status(200).send({
+      id: collection_id,
+      ...(await getMultipleRawData(collection_id))
+    });
+  }
+);
+
+router.get(
+  "/:id/posteriors",
+  validateBody(RawDataGetValidator),
+  async (req: TypedRequestQuery<RawDataRequestQuery>, res: Response) => {
+    // Extract request data
+    const collection_id = req.params.id;
+    const queryPosteriors = parameterParse(req.query?.parameters);
+
+    // Return the filtered posterior data
+    res.status(200).send({
+      id: collection_id,
+      ...(await getPosteriorData(collection_id, queryPosteriors))
     });
   }
 );
