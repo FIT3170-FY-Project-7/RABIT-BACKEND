@@ -26,7 +26,7 @@ class RestErrorResponse {
 /**
  * API error for malformed request
  */
-class BadRequestResponse extends RestErrorResponse {
+export class BadRequestResponse extends RestErrorResponse {
     constructor(detail: string, instance: string) {
         super("/errors/bad-request", "Bad Request", 400, detail, instance);
     }
