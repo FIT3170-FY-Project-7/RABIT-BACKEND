@@ -91,14 +91,16 @@ router.get(
   }
 );
 
-router.get("/user/:id", 
-validateBody(RawDataGetValidator),
-async (req: TypedRequestBody<RawDataList>, res: Response) => {
-  const [plotCollections] = await databaseConnection.query(
-    GET_COLLECTIONS_FOR_USER
-  );
+router.get(
+  "/user/:id",
+  validateBody(RawDataGetValidator),
+  async (req: TypedRequestBody<RawDataGet>, res: Response) => {
+    const [collections] = await databaseConnection.query<
+      (PlotCollection | FilePointer | Upload)[]
+    >(GET_COLLECTIONS_FOR_USER, [req.params.id]);
 
-  res.send(plotCollections);
-})
+    res.send(collections)
+  }
+);
 
 export default router;
