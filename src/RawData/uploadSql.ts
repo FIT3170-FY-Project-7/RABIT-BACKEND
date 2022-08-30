@@ -16,4 +16,4 @@ SELECT * FROM (plot_collection p JOIN file_pointer f on p.collection_id = f.coll
 `;
 
 export const GET_COLLECTIONS_FOR_USER = `
-SELECT p.Collecetion_id, p.Collection_title, c.Last_modified FROM Plot_Collection p JOIN Corner_Plot c on p.Collection_id = c.Collection_id AND c.user_id = (SELECT TOP 1 cp.user_id FROM Corner_Plot cp WHERE cp.Collection_id = p.Collection_id AND cp.user_id = (?)) ORDERBY c.last_modified`;
+SELECT p.collection_title, p.collection_id, MAX(c.last_modified) as last_modified from corner_plot c JOIN plot_collection p on p.collection_id = c.collection_id GROUP BY p.collection_id`;
