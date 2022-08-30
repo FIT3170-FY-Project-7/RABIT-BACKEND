@@ -1,1 +1,2 @@
-INSERT INTO rabit_user VALUES ("temp", "temp", "temp@rabit.com")
+INSERT INTO rabit_user
+VALUES ('temp', 'temp', 'temp@rabit.com');

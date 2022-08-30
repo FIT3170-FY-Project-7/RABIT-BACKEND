@@ -26,6 +26,7 @@ import { RawDataRequestQuery } from "src/Request/Request";
 import {
   calculateParameters,
   filterPosteriorsFromDataset,
+  getMultiplePosteriorData,
   getMultipleRawData,
   getPosteriorData
 } from "./RawDataServices/RawDataService";
@@ -108,7 +109,7 @@ router.get(
     // Return the filtered posterior data
     res.status(200).send({
       id: collection_id,
-      ...(await getPosteriorData(collection_id, queryPosteriors))
+      ...(await getMultiplePosteriorData(collection_id, queryPosteriors))
     });
   }
 );
