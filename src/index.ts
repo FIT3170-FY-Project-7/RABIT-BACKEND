@@ -1,14 +1,10 @@
 import {config as dotenv_config} from "dotenv";
-import express, {Request, Response} from "express";
 import bodyParser from "body-parser";
 import router from "./router";
-import initFirebase from "./Firebase";
-import {
-  badRequestErrorHandler,
-  invalidCredentialsErrorHandler,
-  invalidSignUpErrorHandler
-} from "./ExpressErrorHandlers";
 import cors from "cors";
+import initFirebase from "./Firebase";
+import {badRequestErrorHandler} from "./ExpressErrorHandlers";
+import express from "express";
 
 // Import env file
 let envConfig = dotenv_config();
@@ -19,7 +15,7 @@ if (!envConfig.parsed) {
 }
 
 // Initialise Firebase
-initFirebase();
+// initFirebase();
 
 // Initialise express server
 let app = express();
@@ -36,10 +32,6 @@ app.use(router);
 app.use(badRequestErrorHandler);
 
 const port = process.env.PORT;
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Express + TypeScript Server is running");
-});
 app.listen(port, () => {
     console.log(`Backend is running at http://localhost:${port}`);
 });
