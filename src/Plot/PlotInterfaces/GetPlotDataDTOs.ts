@@ -1,4 +1,3 @@
-import { toSet } from "fp-ts/lib/ReadonlySet";
 import { RowDataPacket } from "mysql2";
 
 export interface ParameterConfigRow extends RowDataPacket {
@@ -78,7 +77,7 @@ export type CornerPlotParsed = {
     };
     axis: {
       size: number;
-      tick_size: number;
+      tickSize: number;
       ticks: number;
     };
     background_color: string;
@@ -89,43 +88,3 @@ export type FullCornerPlotData = CornerPlotParsed & {
   dataset_configs: DatasetConfigParsed[];
   parameter_configs: ParameterConfigParsed[];
 };
-
-// TODO: update this to include place for the actual posterior data
-export interface temp {
-  corner_id: string;
-  last_modified: Date;
-  date_created: Date;
-  collection_id: string;
-  user_id: string;
-  plot_config: {
-    plot_size: number;
-    subplot_size: number;
-    margin: {
-      horizontal: number;
-      vertical: number;
-    };
-    axis: {
-      size: number;
-      tick_size: number;
-      ticks: number;
-    };
-    background_color: string;
-  };
-  dataset_configs: {
-    dataconf_id: string;
-    file_id: string;
-    bins: number;
-    color: string;
-    line_width: number;
-    blur_radius: number;
-    sigmas: number[];
-    quantiles: number[];
-    data: Object;
-  }[];
-  parameter_configs: {
-    parameter_id: string;
-    parameter_name: string;
-    file_id: string;
-    domain: [number, number];
-  }[];
-}

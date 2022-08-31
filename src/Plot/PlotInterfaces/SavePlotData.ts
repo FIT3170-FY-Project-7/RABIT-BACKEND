@@ -17,7 +17,7 @@ const PlotConfigValidator = t.type({
   }),
   axis: t.type({
     size: t.number,
-    tick_size: t.number,
+    tickSize: t.number,
     ticks: t.number
   }),
   background_color: t.string

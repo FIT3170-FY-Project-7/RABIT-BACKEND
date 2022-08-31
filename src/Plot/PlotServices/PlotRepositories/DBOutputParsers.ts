@@ -71,7 +71,7 @@ export const parseCornerPlotRow = (
       },
       axis: {
         size: +cornerPlotRow.axis_size,
-        tick_size: +cornerPlotRow.axis_ticksize,
+        tickSize: +cornerPlotRow.axis_ticksize,
         ticks: +cornerPlotRow.axis_ticks
       },
       background_color: cornerPlotRow.background_color

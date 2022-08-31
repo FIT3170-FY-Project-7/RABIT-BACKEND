@@ -13,3 +13,5 @@ data/
 
 # Firebase service account file
 service-account-file.json
+
+.vscode/

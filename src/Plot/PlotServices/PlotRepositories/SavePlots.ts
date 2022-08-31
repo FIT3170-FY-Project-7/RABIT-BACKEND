@@ -31,7 +31,7 @@ const insertCornerPlot = async (plotData: SavePlotData): Promise<void> => {
   const margin_horizontal = plot_config.margin.horizontal;
   const margin_vertical = plot_config.margin.vertical;
   const axis_size = plot_config.axis.size;
-  const axis_tick_size = plot_config.axis.tick_size;
+  const axis_tick_size = plot_config.axis.tickSize;
   const axis_ticks = plot_config.axis.ticks;
   const background_color = plot_config.background_color;
 
