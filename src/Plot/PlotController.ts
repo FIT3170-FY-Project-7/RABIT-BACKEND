@@ -20,7 +20,8 @@ router.post(
   validateBody(SavePlotDataValidator),
   async (req: TypedRequestBody<SavePlotData>, res: Response) => {
     try {
-      res.status(200).send(await savePlotData(req.body));
+      const cornerPlotId = await savePlotData(req.body);
+      res.status(200).send({ cornerPlotId });
     } catch (e) {
       console.error(e.message);
       res.status(400).send("Error: The query could not be completed");

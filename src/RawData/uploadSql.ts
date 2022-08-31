@@ -12,5 +12,13 @@ SELECT * FROM plot_collection
 `;
 
 export const GET_PLOT_COLLECTION = `
-SELECT * FROM (plot_collection p JOIN file_pointer f on p.collection_id = f.collection_id) JOIN upload u ON f.upload_id = u.upload_id WHERE p.collection_id = ?
+SELECT * FROM (plot_collection p JOIN file_pointer f on p.collection_id = f.collection_id) JOIN base_parameter b ON b.file_id = f.file_id WHERE p.collection_id = ?
+`;
+
+export const INSERT_BASE_PARAMETER = `
+INSERT INTO base_parameter VALUES (?, ?, ?);
+`;
+
+export const GET_BASE_PARAMETER = `
+SELECT * FROM base_parameter WHERE parameter_id = ?
 `;

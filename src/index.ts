@@ -1,9 +1,9 @@
-import {config as dotenv_config} from "dotenv";
+import { config as dotenv_config } from "dotenv";
 import bodyParser from "body-parser";
 import router from "./router";
 import cors from "cors";
 import initFirebase from "./Firebase";
-import {badRequestErrorHandler} from "./ExpressErrorHandlers";
+import { badRequestErrorHandler } from "./ExpressErrorHandlers";
 import express from "express";
 
 // Import env file
