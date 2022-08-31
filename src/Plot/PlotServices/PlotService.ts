@@ -3,8 +3,10 @@ import { SavePlotData } from "../PlotInterfaces/SavePlotData";
 import { insertCornerPlotData } from "./PlotRepositories/SavePlots";
 import { getCornerPlotData } from "./PlotRepositories/RetrievePlot";
 import { FullCornerPlotData } from "../PlotInterfaces/GetPlotDataDTOs";
-import { readRawDataFile } from "../../RawData/storageController";
 import { filterPosteriorsFromDataset } from "../../RawData/RawDataServices/RawDataService";
+import databasePool from "../../databaseConnection";
+import { GET_BASE_PARAMETER_IDS } from "./PlotRepositories/PlotQuerySQL";
+import { readRawDataParameter } from "../../RawData/storageController";
 
 /**
  * Uploads configuration details for a corner plot into the database, so that the corner plot can later
@@ -45,17 +47,23 @@ export const getPlotData = async (
   // Get the full raw data for each file
   await Promise.all(
     cornerPlotData.dataset_configs.map(async (dataset_config) => {
+      const fileId = dataset_config.file_id;
+      const [baseParameters] = await databasePool.query(
+        GET_BASE_PARAMETER_IDS,
+        [fileId, plotParameterNames]
+      );
       // Get the raw data
-      const rawData = await readRawDataFile(dataset_config.file_id);
-
-      // Filter the data according to the corner plot's used parameters
-      const filteredData = filterPosteriorsFromDataset(
-        rawData,
-        plotParameterNames
+      const rawData = Object.fromEntries(
+        await Promise.all(
+          baseParameters.map(async (baseParameter) => [
+            baseParameter.parameter_name,
+            await readRawDataParameter(fileId, baseParameter.parameter_id)
+          ])
+        )
       );
 
       // Set the data in the data config
-      dataset_config.data = filteredData;
+      dataset_config.data = rawData;
     })
   );
 

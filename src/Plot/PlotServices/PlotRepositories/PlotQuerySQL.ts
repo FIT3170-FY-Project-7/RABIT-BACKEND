@@ -38,3 +38,7 @@ WHERE dataconf_id = ?;`;
 export const GET_QUANTILES_FOR_DATASET = `SELECT quantile_value
 FROM dataset_quantile
 WHERE dataconf_id = ?;`;
+
+export const GET_BASE_PARAMETER_IDS = `
+SELECT * FROM base_parameter WHERE file_id = ? AND parameter_name IN (?) 
+`;

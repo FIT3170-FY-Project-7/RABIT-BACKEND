@@ -65,11 +65,6 @@ export const readRawDataParameter = async (
   }
 };
 
-// TODO: Remove
-export const readRawDataFile = async () => {
-  return { posterior: { content: {} } };
-};
-
 export const processRawDataFile = async (fileId: string) => {
   console.log("Processing", fileId);
   const filepath = path.join(
