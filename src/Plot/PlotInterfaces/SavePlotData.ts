@@ -2,7 +2,8 @@ import * as t from "io-ts";
 import { nonEmptyArray, date } from "io-ts-types";
 
 const PlotParamsValidator = t.type({
-  id: t.string,
+  name: t.string,
+  file_id: t.string,
   domain: t.tuple([t.number, t.number])
 });
 

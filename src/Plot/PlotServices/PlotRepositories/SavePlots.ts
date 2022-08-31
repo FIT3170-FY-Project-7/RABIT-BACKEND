@@ -8,7 +8,8 @@ import {
   INSERT_PARAMETER_CONFIG,
   INSERT_DATASET_CONFIG,
   INSERT_DATASET_QUANTILE,
-  INSERT_DATASET_SIGMA
+  INSERT_DATASET_SIGMA,
+  INSERT_PARAMETER_CONFIG_NO_PARAM_ID
 } from "./PlotQuerySQL";
 import databaseConnection from "../../../databaseConnection";
 
@@ -64,13 +65,15 @@ const insertParameterConfigs = async (
 ): Promise<void> => {
   await Promise.all(
     parameterConfigs.map(async (parameterConfig) => {
-      const parameter_id = parameterConfig.id;
+      const name = parameterConfig.name;
+      const file_id = parameterConfig.file_id;
       const domain_min = parameterConfig.domain[0];
       const domain_max = parameterConfig.domain[1];
 
-      await databaseConnection.query(INSERT_PARAMETER_CONFIG, [
+      await databaseConnection.query(INSERT_PARAMETER_CONFIG_NO_PARAM_ID, [
         corner_id,
-        parameter_id,
+        file_id,
+        name,
         domain_max,
         domain_min
       ]);
