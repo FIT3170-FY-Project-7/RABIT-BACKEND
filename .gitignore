@@ -1,6 +1,17 @@
 # Node configurations
 node_modules/
 dist/
+uploads/
 
 # Jetbrains IDE configurations
 .idea
+
+data/
+
+# Environment variables
+.env
+
+# Firebase service account file
+service-account-file.json
+
+.vscode/
