@@ -1,10 +1,10 @@
-import { config as dotenv_config } from "dotenv";
 import bodyParser from "body-parser";
-import router from "./router";
 import cors from "cors";
-import initFirebase from "./Firebase";
-import { badRequestErrorHandler } from "./ExpressErrorHandlers";
+import { config as dotenv_config } from "dotenv";
 import express from "express";
+import { badRequestErrorHandler } from "./ExpressErrorHandlers";
+import initFirebase from "./Firebase";
+import router from "./router";
 
 // This will patch express to catch async errors
 import "express-async-errors";
@@ -18,7 +18,7 @@ if (!envConfig.parsed) {
 }
 
 // Initialise Firebase
-// initFirebase();
+initFirebase();
 
 // Initialise express server
 let app = express();
