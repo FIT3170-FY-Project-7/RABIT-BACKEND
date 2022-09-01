@@ -83,28 +83,33 @@ export const processRawDataFile = async (fileId: string) => {
   bufferStream.end(buffer);
 
   await new Promise((resolve, reject) => {
+    const promises = [];
     bufferStream
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
-        const parameterId = uuidv4();
-        const filepath = path.join(
-          process.env.DATA_PATH,
-          PROCESSED_FOLDER,
-          fileId,
-          parameterId + ".json"
-        );
-        console.log("Writing", filepath);
-        // Keep synchronous to reduce load
-        await databasePool.query(INSERT_BASE_PARAMETER, [
-          parameterId,
-          data.key,
-          fileId
-        ]);
-        await writeFile(filepath, JSON.stringify(data.value), { flag: "w+" });
-        console.log("Writing end", filepath);
+        // TODO: Pause stream until processed
+        promises.push(async () => {
+          const parameterId = uuidv4();
+          const filepath = path.join(
+            process.env.DATA_PATH,
+            PROCESSED_FOLDER,
+            fileId,
+            parameterId + ".json"
+          );
+          console.log("Writing", filepath);
+          // Keep synchronous to reduce load
+          await databasePool.query(INSERT_BASE_PARAMETER, [
+            parameterId,
+            data.key,
+            fileId
+          ]);
+          await writeFile(filepath, JSON.stringify(data.value), { flag: "w+" });
+          console.log("Writing end", filepath);
+        });
       })
       .on("error", (err) => reject(err))
-      .on("end", () => {
+      .on("end", async () => {
+        await Promise.all(promises);
         console.log("Finished processing", filepath);
         resolve(undefined);
       });
