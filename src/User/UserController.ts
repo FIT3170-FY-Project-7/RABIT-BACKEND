@@ -21,7 +21,7 @@ import { User } from "firebase/auth";
 const router = Router();
 
 // CORS config
-let corsOptions = {
+const corsOptions = {
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: true,
@@ -69,33 +69,31 @@ router.post("/signup", cors(corsOptions), validateBody(SignUpDataValidator), (re
             //res.status(201);
             resVar = res.json({ jwt: token });
         })
-        .then(() => {
-            databaseConnection.query(
-                `INSERT INTO rabit_user VALUES(?, ?, ?);`,
-                [
-                    userVar.uid,
-                    req.body.displayName,
-                    req.body.email
-                ],
-                (err) => {
-                    if (err) {
-                        console.error("Failed to insert into database", err);
-                        res.status(500);
-                        next(err)
-        
-                    } else {
-                        const message = "User successfully created";
-                        res.status(201);
-                        return resVar;
-                    }
-                }
-            );
-        })
         .catch((e) => {
             console.error("Failed api call to firebase auth.", e);
             res.status(500);
             next(e);
         })
+
+    databaseConnection.query(
+        `INSERT INTO rabit_user VALUES(?, ?, ?);`,
+        [
+            req.body.userVar.id,
+            req.body.displayName,
+            req.body.email
+        ]
+    ).catch((err) => {
+        if (err) {
+            console.error("Failed to insert into database", err);
+            res.status(500);
+            next(err)
+
+        } else {
+            const message = "User successfully created";
+            res.status(201);
+            return resVar;
+        }
+    });
 })
 
 export default router;

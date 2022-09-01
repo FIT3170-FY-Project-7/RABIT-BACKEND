@@ -85,7 +85,6 @@ router.get(
   "/parameter/:pid",
   validateBody(RawDataGetValidator),
   async (req: TypedRequestBody<RawDataGet>, res: Response) => {
-    console.log("Calling parameter");
     const parameterId = req.params.pid;
 
     const [baseParameter] = await databasePool.query<BaseParameterRow[]>(GET_BASE_PARAMETER, [
@@ -119,7 +118,6 @@ router.get(
   "/plot-collection/:cid",
   validateBody(RawDataGetValidator),
   async (req: TypedRequestBody<RawDataGet>, res: Response) => {
-    console.log("Calling plot collection");
     const collectionId = req.params.cid;
     const rows = await getPlotCollectionDataset(collectionId);
 
