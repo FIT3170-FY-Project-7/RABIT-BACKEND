@@ -1,13 +1,13 @@
+// This will patch express to catch async errors
+import express from "express";
+import "express-async-errors";
+
 import bodyParser from "body-parser";
 import cors from "cors";
 import { config as dotenv_config } from "dotenv";
-import express from "express";
 import { badRequestErrorHandler } from "./ExpressErrorHandlers";
 import initFirebase from "./Firebase";
 import router from "./router";
-
-// This will patch express to catch async errors
-import "express-async-errors";
 
 // Import env file
 let envConfig = dotenv_config();
