@@ -33,5 +33,5 @@ app.use(badRequestErrorHandler);
 
 const port = process.env.PORT;
 app.listen(port, () => {
-  console.log(`Backend is running at http://localhost:${port}`);
+  console.info(`Backend is running at http://localhost:${port}`);
 });
