@@ -72,29 +72,50 @@ export const processRawDataFile = async (fileId: string) => {
     UNPROCESSED_FOLDER,
     fileId + ".json"
   );
+  console.log("Processing", filepath);
 
-  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId));
+  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
+    recursive: true
+  });
 
   const buffer = await readFile(filepath);
   const bufferStream = new stream.PassThrough();
   bufferStream.end(buffer);
 
-  bufferStream
-    .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
-    .on("data", async (data: {key: string, value: any[]}) => {
-      const parameterId = uuidv4();
-      const filepath = path.join(
-        process.env.DATA_PATH,
-        PROCESSED_FOLDER,
-        fileId,
-        parameterId + ".json"
-      );
-      // TODO: Can happen simultaneously with other parameters
-      await databasePool.query(INSERT_BASE_PARAMETER, [
-        parameterId,
-        data.key,
-        fileId
-      ]);
-      await writeFile(filepath, JSON.stringify(data.value), { flag: "w+" });
-    });
+  await new Promise((resolve, reject) => {
+    const outstandingFunctions: (() => {})[] = [];
+    bufferStream
+      .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
+      .on("data", async (data: { key: string; value: any[] }) => {
+        // TODO: Pause stream until processed
+        const saveParameter = async () => {
+          const parameterId = uuidv4();
+          const filepath = path.join(
+            process.env.DATA_PATH,
+            PROCESSED_FOLDER,
+            fileId,
+            parameterId + ".json"
+          );
+          await databasePool.query(INSERT_BASE_PARAMETER, [
+            parameterId,
+            data.key,
+            fileId
+          ]);
+          await writeFile(filepath, JSON.stringify(data.value), {
+            flag: "w+"
+          });
+        };
+        outstandingFunctions.push(saveParameter);
+      })
+      .on("error", (err) => reject(err))
+      .on("end", async () => {
+        console.log("Waiting for parameters");
+        // Wait sequentially to avoid database from timing out
+        for (const parmeterFunction of outstandingFunctions) {
+          await parmeterFunction();
+        }
+        console.log("Finished processing", filepath);
+        resolve(undefined);
+      });
+  });
 };

@@ -67,11 +67,16 @@ router.post("/", upload.any(), async (req: Request, res: Response) => {
   );
   await Promise.all(fileInserts);
 
-  // TODO: This can happen after the response, but need to provide some other way to let the frontend know that the processing is complete
-  const processFiles = fileIds.map((fileId) => processRawDataFile(fileId));
-  await Promise.all(processFiles);
+  res.status(200).send({ id: collectionId, fileIds });
+});
 
-  res.status(200).send({ id: collectionId });
+router.post("/process", async (req: Request, res: Response) => {
+  // Don't process simultaneously to reduce load
+  for (const fileId of req.body.fileIds) {
+    await processRawDataFile(fileId);
+  }
+
+  res.status(200).send({ fileIds: req.body.fileIds });
 });
 
 router.get(
