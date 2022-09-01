@@ -88,6 +88,7 @@ export const processRawDataFile = async (fileId: string) => {
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
         // TODO: Pause stream until processed
+        console.log("pushing");
         promises.push(async () => {
           const parameterId = uuidv4();
           const filepath = path.join(
@@ -109,7 +110,9 @@ export const processRawDataFile = async (fileId: string) => {
       })
       .on("error", (err) => reject(err))
       .on("end", async () => {
-        await Promise.all(promises);
+        console.log("Waiting", promises.length);
+        const data = await Promise.all(promises);
+        console.log("Promises", promises, data);
         console.log("Finished processing", filepath);
         resolve(undefined);
       });
