@@ -72,6 +72,7 @@ export const processRawDataFile = async (fileId: string) => {
     UNPROCESSED_FOLDER,
     fileId + ".json"
   );
+  console.log("Processing", filepath);
 
   await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
     recursive: true
@@ -92,6 +93,7 @@ export const processRawDataFile = async (fileId: string) => {
           fileId,
           parameterId + ".json"
         );
+        console.log("Writing", filepath);
         // Keep synchronous to reduce load
         await databasePool.query(INSERT_BASE_PARAMETER, [
           parameterId,
@@ -101,6 +103,9 @@ export const processRawDataFile = async (fileId: string) => {
         await writeFile(filepath, JSON.stringify(data.value), { flag: "w+" });
       })
       .on("error", (err) => reject(err))
-      .on("end", () => resolve(undefined));
+      .on("end", () => {
+        console.log("Finished processing", filepath);
+        resolve(undefined);
+      });
   });
 };
