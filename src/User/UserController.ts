@@ -20,7 +20,7 @@ import validateBody from "../ValidateBody";
 const router = Router();
 
 // CORS config
-let corsOptions = {
+const corsOptions = {
     origin: "*",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     preflightContinue: true,
@@ -80,20 +80,19 @@ router.post("/signup", cors(corsOptions), validateBody(SignUpDataValidator), (re
             req.body.userVar.id,
             req.body.displayName,
             req.body.email
-        ],
-        (err) => {
-            if (err) {
-                console.error("Failed to insert into database", err);
-                res.status(500);
-                next(err)
+        ]
+    ).catch((err) => {
+        if (err) {
+            console.error("Failed to insert into database", err);
+            res.status(500);
+            next(err)
 
-            } else {
-                const message = "User successfully created";
-                res.status(201);
-                return resVar;
-            }
+        } else {
+            const message = "User successfully created";
+            res.status(201);
+            return resVar;
         }
-    );
+    });
 })
 
 export default router;

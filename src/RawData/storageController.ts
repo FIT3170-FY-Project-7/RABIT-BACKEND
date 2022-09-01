@@ -5,6 +5,8 @@ import path from "node:path";
 import { diskStorage } from "multer";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
+// must ignore because tsc does not recognise @types/jsonstream as type declaration of JSONStream
+// @ts-ignore
 import JSONStream from "JSONStream";
 import stream from "node:stream";
 import databasePool from "../databaseConnection";
