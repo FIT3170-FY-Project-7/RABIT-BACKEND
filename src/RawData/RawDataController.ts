@@ -61,11 +61,22 @@ router.post("/", upload.any(), async (req: Request, res: Response) => {
   );
   await Promise.all(fileInserts);
 
-  // TODO: This can happen after the response, but need to provide some other way to let the frontend know that the processing is complete
-  const processFiles = fileIds.map((fileId) => processRawDataFile(fileId));
-  await Promise.all(processFiles);
-
   res.status(200).send({ id: collectionId });
+});
+
+router.post("/process", async (req: Request, res: Response) => {
+  // TODO: Add body params check
+
+  // To process simultaneously
+  // const processFiles = req.body.fileIds.map((fileId) => processRawDataFile(fileId));
+  // await Promise.all(processFiles);
+
+  // Don't process simultaneously to reduce load
+  for (const fileId of req.body.fileIds) {
+    await processRawDataFile(fileId);
+  }
+
+  res.status(200).send({ fileIds: req.body.fileIds });
 });
 
 router.get(
@@ -86,9 +97,10 @@ router.get(
   async (req: TypedRequestBody<RawDataGet>, res: Response) => {
     const parameterId = req.params.pid;
 
-    const [baseParameter] = await databasePool.query<BaseParameterRow[]>(GET_BASE_PARAMETER, [
-      parameterId
-    ]);
+    const [baseParameter] = await databasePool.query<BaseParameterRow[]>(
+      GET_BASE_PARAMETER,
+      [parameterId]
+    );
     const fileId = baseParameter[0].file_id;
     const posterior = await readRawDataParameter(fileId, parameterId);
 

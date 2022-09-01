@@ -79,22 +79,26 @@ export const processRawDataFile = async (fileId: string) => {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(buffer);
 
-  bufferStream
-    .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
-    .on("data", async (data: {key: string, value: any[]}) => {
-      const parameterId = uuidv4();
-      const filepath = path.join(
-        process.env.DATA_PATH,
-        PROCESSED_FOLDER,
-        fileId,
-        parameterId + ".json"
-      );
-      // TODO: Can happen simultaneously with other parameters
-      await databasePool.query(INSERT_BASE_PARAMETER, [
-        parameterId,
-        data.key,
-        fileId
-      ]);
-      await writeFile(filepath, JSON.stringify(data.value), { flag: "w+" });
-    });
+  await new Promise((resolve, reject) => {
+    bufferStream
+      .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
+      .on("data", async (data: { key: string; value: any[] }) => {
+        const parameterId = uuidv4();
+        const filepath = path.join(
+          process.env.DATA_PATH,
+          PROCESSED_FOLDER,
+          fileId,
+          parameterId + ".json"
+        );
+        // Keep synchronous to reduce load
+        await databasePool.query(INSERT_BASE_PARAMETER, [
+          parameterId,
+          data.key,
+          fileId
+        ]);
+        await writeFile(filepath, JSON.stringify(data.value), { flag: "w+" });
+      })
+      .on("error", (err) => reject(err))
+      .on("end", () => resolve(undefined));
+  });
 };
