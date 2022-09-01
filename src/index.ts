@@ -6,6 +6,9 @@ import initFirebase from "./Firebase";
 import { badRequestErrorHandler } from "./ExpressErrorHandlers";
 import express from "express";
 
+// This will patch express to catch async errors
+require("express-async-errors");
+
 // Import env file
 let envConfig = dotenv_config();
 if (!envConfig.parsed) {
