@@ -22,3 +22,7 @@ INSERT INTO base_parameter VALUES (?, ?, ?);
 export const GET_BASE_PARAMETER = `
 SELECT * FROM base_parameter WHERE parameter_id = ?
 `;
+
+export const GET_COLLECTIONS_FOR_USER = `
+SELECT p.collection_title, p.collection_id, MAX(c.last_modified) as last_modified FROM (corner_plot c JOIN plot_collection p on p.collection_id = c.collection_id) WHERE c.user_id = ? GROUP BY p.collection_id ORDER BY last_modified
+`;

@@ -16,6 +16,7 @@ import {
 } from "./UserInterfaces/Auth";
 import {TypedRequestBody} from "../TypedExpressIO";
 import validateBody from "../ValidateBody";
+import { User } from "firebase/auth";
 
 const router = Router();
 
@@ -56,7 +57,7 @@ router.post("/login", cors(corsOptions), validateBody(LoginDataValidator), (req:
 //  password: string,
 router.options("/signup", cors(corsOptions));
 router.post("/signup", cors(corsOptions), validateBody(SignUpDataValidator), (req: Request<SignUpData>, res: Response<SignUpResponse>, next: NextFunction) => {
-    let userVar, resVar:Response<SignUpResponse>;
+    let userVar:User, resVar:Response<SignUpResponse>;
 
     createAccount(req.body)
         .then((user) => {
@@ -64,9 +65,9 @@ router.post("/signup", cors(corsOptions), validateBody(SignUpDataValidator), (re
             return user.getIdToken()
         })
         .then((token) => {
-            addResponseHeaders(res);
-            res.status(201);
-            let resVar =  res.json({ jwt: token });
+            //addResponseHeaders(res);
+            //res.status(201);
+            resVar = res.json({ jwt: token });
         })
         .catch((e) => {
             console.error("Failed api call to firebase auth.", e);

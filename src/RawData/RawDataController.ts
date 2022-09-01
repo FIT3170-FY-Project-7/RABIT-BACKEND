@@ -1,5 +1,10 @@
 import { Router, Request, Response } from "express";
-import databaseConnection, { toDBDate } from "../databaseConnection";
+import databaseConnection, {
+  FilePointer,
+  PlotCollection,
+  toDBDate,
+  Upload
+} from "../databaseConnection";
 import { v4 as uuidv4 } from "uuid";
 import {
   processRawDataFile,
@@ -10,6 +15,7 @@ import {
   INSERT_UPLOAD,
   INSERT_FILE,
   GET_ALL_PLOT_COLLECTIONS,
+  GET_COLLECTIONS_FOR_USER,
   GET_BASE_PARAMETER
 } from "./uploadSql";
 import {
@@ -104,6 +110,18 @@ router.get(
       parameterName: baseParameter[0].parameter_name,
       posterior
     });
+  }
+);
+
+router.get(
+  "/user/:id",
+  validateBody(RawDataGetValidator),
+  async (req: TypedRequestBody<RawDataGet>, res: Response) => {
+    const [collections] = await databaseConnection.query<
+      (PlotCollection | FilePointer | Upload)[]
+    >(GET_COLLECTIONS_FOR_USER, [req.params.id]);
+
+    res.send(collections);
   }
 );
 

@@ -8,6 +8,7 @@ import userController from "./User/UserController";
 const router = Router();
 router.use("/plot", plotController);
 router.use("/raw-data", rawDataController);
+router.use("/user", userController)
 
 router.use(invalidCredentialsErrorHandler);
 router.use(invalidSignUpErrorHandler);
