@@ -83,32 +83,37 @@ export const processRawDataFile = async (fileId: string) => {
   bufferStream.end(buffer);
 
   await new Promise((resolve, reject) => {
-    const promises = [];
+    const outstandingFunctions = [];
     bufferStream
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
         // TODO: Pause stream until processed
-        const parameterId = uuidv4();
-        const filepath = path.join(
-          process.env.DATA_PATH,
-          PROCESSED_FOLDER,
-          fileId,
-          parameterId + ".json"
-        );
-        const dbPromise = databasePool.query(INSERT_BASE_PARAMETER, [
-          parameterId,
-          data.key,
-          fileId
-        ]);
-        const writePromise = writeFile(filepath, JSON.stringify(data.value), {
-          flag: "w+"
-        });
-        promises.push(dbPromise, writePromise);
+        const saveParameter = async () => {
+          const parameterId = uuidv4();
+          const filepath = path.join(
+            process.env.DATA_PATH,
+            PROCESSED_FOLDER,
+            fileId,
+            parameterId + ".json"
+          );
+          const dbPromise = databasePool.query(INSERT_BASE_PARAMETER, [
+            parameterId,
+            data.key,
+            fileId
+          ]);
+          const writePromise = writeFile(filepath, JSON.stringify(data.value), {
+            flag: "w+"
+          });
+        };
+        outstandingFunctions.push(saveParameter);
       })
       .on("error", (err) => reject(err))
       .on("end", async () => {
         console.log("Waiting for parameters");
-        await Promise.all(promises);
+        // await Promise.all(saveFiles);
+        for (const parmeterFunction of outstandingFunctions) {
+          await parmeterFunction();
+        }
         console.log("Finished processing", filepath);
         resolve(undefined);
       });
