@@ -20,9 +20,9 @@ import {
 } from "./RawDataInterfaces/RawDataValidators";
 import { TypedRequestBody } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
-import { getMultipleRawData } from "./RawDataServices/RawDataService";
 import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
 import databasePool from "../databaseConnection";
+import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -87,7 +87,7 @@ router.get(
     console.log("Calling parameter");
     const parameterId = req.params.pid;
 
-    const [baseParameter] = await databasePool.query(GET_BASE_PARAMETER, [
+    const [baseParameter] = await databasePool.query<BaseParameterRow[]>(GET_BASE_PARAMETER, [
       parameterId
     ]);
     const fileId = baseParameter[0].file_id;

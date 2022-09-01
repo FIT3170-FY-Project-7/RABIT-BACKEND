@@ -15,6 +15,12 @@ export type ParameterConfigParsed = {
   domain: [number, number];
 };
 
+export interface BaseParameterRow extends RowDataPacket {
+  parameter_id: string;
+  parameter_name: string;
+  file_id: string;
+}
+
 export interface DatasetSigmaRow extends RowDataPacket {
   sigma_value: string;
 }

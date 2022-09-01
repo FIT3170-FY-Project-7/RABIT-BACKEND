@@ -81,7 +81,7 @@ export const processRawDataFile = async (fileId: string) => {
 
   bufferStream
     .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
-    .on("data", async (data) => {
+    .on("data", async (data: {key: string, value: any[]}) => {
       const parameterId = uuidv4();
       const filepath = path.join(
         process.env.DATA_PATH,
@@ -90,7 +90,7 @@ export const processRawDataFile = async (fileId: string) => {
         parameterId + ".json"
       );
       console.log("Processing", fileId, parameterId);
-
+        console.log(data)
       // TODO: Can happen simultaneously with other parameters
       await databasePool.query(INSERT_BASE_PARAMETER, [
         parameterId,

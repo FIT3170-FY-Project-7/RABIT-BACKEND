@@ -2,8 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { SavePlotData } from "../PlotInterfaces/SavePlotData";
 import { insertCornerPlotData } from "./PlotRepositories/SavePlots";
 import { getCornerPlotData } from "./PlotRepositories/RetrievePlot";
-import { FullCornerPlotData } from "../PlotInterfaces/GetPlotDataDTOs";
-import { filterPosteriorsFromDataset } from "../../RawData/RawDataServices/RawDataService";
+import { BaseParameterRow, FullCornerPlotData } from "../PlotInterfaces/GetPlotDataDTOs";
 import databasePool from "../../databaseConnection";
 import { GET_BASE_PARAMETER_IDS } from "./PlotRepositories/PlotQuerySQL";
 import { readRawDataParameter } from "../../RawData/storageController";
@@ -48,7 +47,7 @@ export const getPlotData = async (
   await Promise.all(
     cornerPlotData.dataset_configs.map(async (dataset_config) => {
       const fileId = dataset_config.file_id;
-      const [baseParameters] = await databasePool.query(
+      const [baseParameters] = await databasePool.query<BaseParameterRow[]>(
         GET_BASE_PARAMETER_IDS,
         [fileId, plotParameterNames]
       );
