@@ -2,6 +2,14 @@ export const INSERT_CORNER_PLOT = `INSERT INTO corner_plot VALUES (?, ?, ?, ?, ?
 
 export const INSERT_PARAMETER_CONFIG = `INSERT INTO parameter_config VALUES (?, ?, ?, ?);`;
 
+export const INSERT_PARAMETER_CONFIG_NO_PARAM_ID = `
+INSERT INTO parameter_config
+VALUE (?, (SELECT parameter_id
+            FROM base_parameter
+            WHERE file_id = ?
+                AND parameter_name = ?), ?, ?)
+`;
+
 export const INSERT_DATASET_CONFIG = `INSERT INTO dataset_config VALUES (?, ?, ?, ?, ?, ?, ?);`;
 
 export const INSERT_DATASET_SIGMA = `INSERT INTO dataset_sigma VALUES (?, ?);`;
@@ -30,3 +38,7 @@ WHERE dataconf_id = ?;`;
 export const GET_QUANTILES_FOR_DATASET = `SELECT quantile_value
 FROM dataset_quantile
 WHERE dataconf_id = ?;`;
+
+export const GET_BASE_PARAMETER_IDS = `
+SELECT * FROM base_parameter WHERE file_id = ? AND parameter_name IN (?) 
+`;

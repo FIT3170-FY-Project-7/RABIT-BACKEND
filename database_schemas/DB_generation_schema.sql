@@ -63,7 +63,7 @@ ALTER TABLE plot_collection
 CREATE TABLE base_parameter
 (
     parameter_id   CHAR(36)    NOT NULL,
-    parameter_name VARCHAR(32) NOT NULL,
+    parameter_name VARCHAR(255) NOT NULL,
     file_id        CHAR(36)    NOT NULL
 );
 

@@ -8,7 +8,8 @@ import {
   INSERT_PARAMETER_CONFIG,
   INSERT_DATASET_CONFIG,
   INSERT_DATASET_QUANTILE,
-  INSERT_DATASET_SIGMA
+  INSERT_DATASET_SIGMA,
+  INSERT_PARAMETER_CONFIG_NO_PARAM_ID
 } from "./PlotQuerySQL";
 import databaseConnection from "../../../databaseConnection";
 
@@ -31,7 +32,7 @@ const insertCornerPlot = async (plotData: SavePlotData): Promise<void> => {
   const margin_horizontal = plot_config.margin.horizontal;
   const margin_vertical = plot_config.margin.vertical;
   const axis_size = plot_config.axis.size;
-  const axis_tick_size = plot_config.axis.tick_size;
+  const axis_tick_size = plot_config.axis.tickSize;
   const axis_ticks = plot_config.axis.ticks;
   const background_color = plot_config.background_color;
 
@@ -64,13 +65,15 @@ const insertParameterConfigs = async (
 ): Promise<void> => {
   await Promise.all(
     parameterConfigs.map(async (parameterConfig) => {
-      const parameter_id = parameterConfig.id;
+      const name = parameterConfig.name;
+      const file_id = parameterConfig.file_id;
       const domain_min = parameterConfig.domain[0];
       const domain_max = parameterConfig.domain[1];
 
-      await databaseConnection.query(INSERT_PARAMETER_CONFIG, [
+      await databaseConnection.query(INSERT_PARAMETER_CONFIG_NO_PARAM_ID, [
         corner_id,
-        parameter_id,
+        file_id,
+        name,
         domain_max,
         domain_min
       ]);

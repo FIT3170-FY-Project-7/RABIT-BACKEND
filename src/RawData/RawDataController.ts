@@ -1,18 +1,17 @@
 import { Router, Request, Response } from "express";
-import databaseConnection, {
-  toDBDate,
-  PlotCollection,
-  FilePointer,
-  Upload
-} from "../databaseConnection";
+import databaseConnection, { toDBDate } from "../databaseConnection";
 import { v4 as uuidv4 } from "uuid";
-import { readRawDataFile, upload } from "./storageController";
+import {
+  processRawDataFile,
+  readRawDataParameter,
+  upload
+} from "./storageController";
 import {
   INSERT_UPLOAD,
   INSERT_FILE,
   GET_ALL_PLOT_COLLECTIONS,
-  GET_PLOT_COLLECTION,
   GET_COLLECTIONS_FOR_USER
+  GET_BASE_PARAMETER
 } from "./uploadSql";
 import {
   RawDataGet,
@@ -20,17 +19,11 @@ import {
   RawDataList,
   RawDataListValidator
 } from "./RawDataInterfaces/RawDataValidators";
-import { TypedRequestBody, TypedRequestQuery } from "src/TypedExpressIO";
+import { TypedRequestBody } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
-import { parameterParse } from "../Request/RequestParse";
-import { RawDataRequestQuery } from "src/Request/Request";
-import {
-  calculateParameters,
-  filterPosteriorsFromDataset,
-  getMultiplePosteriorData,
-  getMultipleRawData,
-  getPosteriorData
-} from "./RawDataServices/RawDataService";
+import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
+import databasePool from "../databaseConnection";
+import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -39,9 +32,9 @@ const router = Router();
 
 // Can't use validator as multer uses form data to submit files
 router.post("/", upload.any(), async (req: Request, res: Response) => {
-  if (!req.files || !req.body.title || !req.body.description) {
+  if (!req.files || !req.body.title) {
     res.status(400).send({
-      message: "Missing file, name or description parameters"
+      message: "Missing file or title parameters"
     });
     return;
   }
@@ -69,6 +62,10 @@ router.post("/", upload.any(), async (req: Request, res: Response) => {
   );
   await Promise.all(fileInserts);
 
+  // TODO: This can happen after the response, but need to provide some other way to let the frontend know that the processing is complete
+  const processFiles = fileIds.map((fileId) => processRawDataFile(fileId));
+  await Promise.all(processFiles);
+
   res.status(200).send({ id: collectionId });
 });
 
@@ -85,16 +82,23 @@ router.get(
 );
 
 router.get(
-  "/:id",
+  "/parameter/:pid",
   validateBody(RawDataGetValidator),
   async (req: TypedRequestBody<RawDataGet>, res: Response) => {
-    // Extract request data
-    const collection_id = req.params.id;
+    console.log("Calling parameter");
+    const parameterId = req.params.pid;
 
-    // Return the raw data for each file and the set of usable parameters for the plot collection
+    const [baseParameter] = await databasePool.query<BaseParameterRow[]>(GET_BASE_PARAMETER, [
+      parameterId
+    ]);
+    const fileId = baseParameter[0].file_id;
+    const posterior = await readRawDataParameter(fileId, parameterId);
+
     res.status(200).send({
-      id: collection_id,
-      ...(await getMultipleRawData(collection_id))
+      fileId,
+      parameterId,
+      parameterName: baseParameter[0].parameter_name,
+      posterior
     });
   }
 );
@@ -112,17 +116,28 @@ router.get(
 );
 
 router.get(
-  "/:id/posteriors",
+  "/plot-collection/:cid",
   validateBody(RawDataGetValidator),
-  async (req: TypedRequestQuery<RawDataRequestQuery>, res: Response) => {
-    // Extract request data
-    const collection_id = req.params.id;
-    const queryPosteriors = parameterParse(req.query?.parameters);
+  async (req: TypedRequestBody<RawDataGet>, res: Response) => {
+    console.log("Calling plot collection");
+    const collectionId = req.params.cid;
+    const rows = await getPlotCollectionDataset(collectionId);
 
-    // Return the filtered posterior data
+    const title = rows[0].collection_title;
+    const description = rows[0].collection_description;
+    const fileIds = [...new Set(rows.map((row) => row.file_id))];
+    const files = fileIds.map((fileId) => ({
+      fileId,
+      parameters: rows
+        .filter((row) => row.file_id === fileId)
+        .map((row) => ({ id: row.parameter_id, name: row.parameter_name }))
+    }));
+
     res.status(200).send({
-      id: collection_id,
-      ...(await getMultiplePosteriorData(collection_id, queryPosteriors))
+      id: collectionId,
+      title,
+      description,
+      files
     });
   }
 );
