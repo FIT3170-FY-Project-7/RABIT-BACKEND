@@ -42,7 +42,6 @@ const storage = diskStorage({
   },
   filename: (req, file, callback) => {
     const filenameId = uuidv4();
-    console.log("Received uploaded file:", filenameId);
     callback(null, filenameId + ".json");
   }
 });
@@ -68,7 +67,6 @@ export const readRawDataParameter = async (
 };
 
 export const processRawDataFile = async (fileId: string) => {
-  console.log("Processing", fileId);
   const filepath = path.join(
     process.env.DATA_PATH,
     UNPROCESSED_FOLDER,
@@ -91,8 +89,6 @@ export const processRawDataFile = async (fileId: string) => {
         fileId,
         parameterId + ".json"
       );
-      console.log("Processing", fileId, parameterId);
-        console.log(data)
       // TODO: Can happen simultaneously with other parameters
       await databasePool.query(INSERT_BASE_PARAMETER, [
         parameterId,
