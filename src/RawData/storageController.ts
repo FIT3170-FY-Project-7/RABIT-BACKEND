@@ -73,7 +73,9 @@ export const processRawDataFile = async (fileId: string) => {
     fileId + ".json"
   );
 
-  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId));
+  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
+    recursive: true
+  });
 
   const buffer = await readFile(filepath);
   const bufferStream = new stream.PassThrough();
