@@ -1,4 +1,4 @@
--- Database setup file for RABIT
+ -- Database setup file for RABIT
 -- ==============================
 -- WARNING!
 -- Running this file will DELETE ALL EXISTING DATA if the database is already configured
@@ -27,9 +27,10 @@ CREATE TABLE rabit_user
 );
 
 ALTER TABLE rabit_user
-    ADD CONSTRAINT rabit_user_pk PRIMARY KEY (user_id);
+  ADD CONSTRAINT rabit_user_pk PRIMARY KEY (user_id);
 
 CREATE TABLE upload
+
 (
     upload_id       CHAR(36) NOT NULL,
     user_id         CHAR(28) NOT NULL,
@@ -37,7 +38,7 @@ CREATE TABLE upload
 );
 
 ALTER TABLE upload
-    ADD CONSTRAINT upload_pk PRIMARY KEY (upload_id);
+  ADD CONSTRAINT upload_pk PRIMARY KEY (upload_id);
 
 CREATE TABLE file_pointer
 (
@@ -57,7 +58,7 @@ CREATE TABLE plot_collection
 );
 
 ALTER TABLE plot_collection
-    ADD CONSTRAINT plot_collection_pk PRIMARY KEY (collection_id);
+  ADD CONSTRAINT plot_collection_pk PRIMARY KEY (collection_id);
 
 CREATE TABLE base_parameter
 (
@@ -88,7 +89,7 @@ CREATE TABLE corner_plot
 );
 
 ALTER TABLE corner_plot
-    ADD CONSTRAINT corner_plot_pk PRIMARY KEY (corner_id);
+  ADD CONSTRAINT corner_plot_pk PRIMARY KEY (corner_id);
 
 CREATE TABLE parameter_config
 (
