@@ -107,7 +107,7 @@ export const processRawDataFile = async (fileId: string) => {
         };
         outstandingFunctions.push(saveParameter);
       })
-      .on("error", (err) => reject(err))
+      .on("error", (err: any) => reject(err))
       .on("end", async () => {
         console.log("Waiting for parameters");
         // Wait sequentially to avoid database from timing out
