@@ -101,6 +101,7 @@ export const processRawDataFile = async (fileId: string) => {
           fileId
         ]);
         await writeFile(filepath, JSON.stringify(data.value), { flag: "w+" });
+        console.log("Writing end", filepath);
       })
       .on("error", (err) => reject(err))
       .on("end", () => {
