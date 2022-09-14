@@ -15,3 +15,10 @@ export const RawDataProcessValidator = t.type({
   fileIds: t.array(t.string)
 });
 export type RawDataProcess = t.TypeOf<typeof RawDataProcessValidator>;
+
+export const RawDataChunkValidator = t.type({
+  fileId: t.string,
+  chunkCount: t.string // Chunks are sent through form data which can't contain numbers
+});
+
+export type RawDataChunk = t.TypeOf<typeof RawDataChunkValidator>;

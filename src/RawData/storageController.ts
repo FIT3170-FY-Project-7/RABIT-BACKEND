@@ -71,24 +71,25 @@ export const readRawDataParameter = async (
   }
 };
 
-export const processRawDataFile = async (fileId: string) => {
-  const filepath = path.join(process.env.DATA_PATH, UNPROCESSED_FOLDER, fileId);
-  console.log("Processing", filepath);
-
-  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
-    recursive: true
-  });
-
+const createStreamFromChunks = async (filePath: string) => {
   const fileStream = new stream.PassThrough();
-  const chunks = await readdir(filepath);
+  const chunks = await readdir(filePath);
   for (const chunk of chunks) {
-    const buffer = await readFile(path.join(filepath, chunk));
+    const buffer = await readFile(path.join(filePath, chunk));
     fileStream.write(buffer);
   }
   fileStream.end();
 
-  await new Promise((resolve, reject) => {
-    const outstandingFunctions: (() => {})[] = [];
+  return fileStream;
+};
+
+const splitRawDataStreamIntoParameters = async (
+  fileStream: stream.PassThrough,
+  fileId: string,
+  filePath: string
+) =>
+  new Promise((resolve, reject) => {
+    const outstandingFunctions: (() => Promise<void>)[] = [];
     fileStream
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
@@ -119,10 +120,20 @@ export const processRawDataFile = async (fileId: string) => {
         for (const parmeterFunction of outstandingFunctions) {
           await parmeterFunction();
         }
-        console.log("Finished processing", filepath);
+        console.log("Finished processing", filePath);
         resolve(undefined);
       });
   });
 
-  await rm(filepath, { recursive: true });
+export const processRawDataFile = async (fileId: string) => {
+  const filePath = path.join(process.env.DATA_PATH, UNPROCESSED_FOLDER, fileId);
+  console.log("Processing", filePath);
+  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
+    recursive: true
+  });
+
+  const fileStream = await createStreamFromChunks(filePath);
+  await splitRawDataStreamIntoParameters(fileStream, fileId, filePath);
+
+  await rm(filePath, { recursive: true });
 };

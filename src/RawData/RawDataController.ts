@@ -26,7 +26,9 @@ import {
   RawDataFileIdsValidator,
   RawDataProcessValidator,
   RawDataFileIds,
-  RawDataProcess
+  RawDataProcess,
+  RawDataChunk,
+  RawDataChunkValidator
 } from "./RawDataInterfaces/RawDataValidators";
 import { TypedRequestBody } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
@@ -53,9 +55,16 @@ router.post(
   }
 );
 
-router.post("/chunk", upload.single("chunk"), (req: Request, res: Response) => {
-  res.status(200).send({ message: "Chunk succesfully uploaded" });
-});
+router.post(
+  "/chunk",
+  upload.single("chunk"),
+  validateBody(RawDataChunkValidator), // Validator has to be after upload
+  (req: TypedRequestBody<RawDataChunk>, res: Response) => {
+    res.status(200).send({
+      message: `File ${req.body.fileId}, chunk ${req.body.chunkCount} succesfully uploaded`
+    });
+  }
+);
 
 router.post(
   "/process",
