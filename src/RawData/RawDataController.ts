@@ -22,7 +22,13 @@ import {
   RawDataGet,
   RawDataGetValidator,
   RawDataList,
-  RawDataListValidator
+  RawDataListValidator,
+  RawDataFileIdsValidator,
+  RawDataProcessValidator,
+  RawDataFileIds,
+  RawDataProcess,
+  RawDataChunk,
+  RawDataChunkValidator
 } from "./RawDataInterfaces/RawDataValidators";
 import { TypedRequestBody } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
@@ -35,49 +41,63 @@ const TEMP_USER = "temp";
 
 const router = Router();
 
-// Can't use validator as multer uses form data to submit files
-router.post("/", upload.any(), async (req: Request, res: Response) => {
-  if (!req.files || !req.body.title) {
-    res.status(400).send({
-      message: "Missing file or title parameters"
+router.post(
+  "/file-ids",
+  validateBody(RawDataFileIdsValidator),
+  (req: TypedRequestBody<RawDataFileIds>, res: Response) => {
+    const fileIds = new Array(req.body.fileCount)
+      .fill(undefined)
+      .map(() => uuidv4());
+
+    res.status(200).send({
+      fileIds
     });
-    return;
   }
+);
 
-  const uploadId = uuidv4();
-  const collectionId = uuidv4();
-  const fileIds: string[] | undefined = Array.prototype.map.call(
-    req?.files,
-    (file: Express.Multer.File) => file.filename.split(".")[0]
-  );
-
-  // Insert plot collection and upload
-  await databaseConnection.query(INSERT_UPLOAD, [
-    uploadId,
-    TEMP_USER,
-    toDBDate(new Date()),
-    collectionId,
-    req.body.title,
-    req.body.description
-  ]);
-
-  // Insert file pointers simultaneously
-  const fileInserts = fileIds?.map((fileId) =>
-    databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
-  );
-  await Promise.all(fileInserts);
-
-  res.status(200).send({ id: collectionId, fileIds });
-});
-
-router.post("/process", async (req: Request, res: Response) => {
-  // Don't process simultaneously to reduce load
-  for (const fileId of req.body.fileIds) {
-    await processRawDataFile(fileId);
+router.post(
+  "/chunk",
+  upload.single("chunk"),
+  validateBody(RawDataChunkValidator), // Validator has to be after upload
+  (req: TypedRequestBody<RawDataChunk>, res: Response) => {
+    res.status(200).send({
+      message: `File ${req.body.fileId}, chunk ${req.body.chunkCount} succesfully uploaded`
+    });
   }
+);
 
-  res.status(200).send({ fileIds: req.body.fileIds });
-});
+router.post(
+  "/process",
+  validateBody(RawDataProcessValidator),
+  async (req: TypedRequestBody<RawDataProcess>, res: Response) => {
+    const uploadId = uuidv4();
+    const collectionId = uuidv4();
+    const fileIds: string[] | undefined = req.body.fileIds;
+
+    // Insert plot collection and upload
+    await databaseConnection.query(INSERT_UPLOAD, [
+      uploadId,
+      TEMP_USER,
+      toDBDate(new Date()),
+      collectionId,
+      req.body.title,
+      req.body.description
+    ]);
+
+    // Insert file pointers simultaneously
+    const fileInserts = fileIds?.map((fileId) =>
+      databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
+    );
+    await Promise.all(fileInserts);
+
+    // Don't process simultaneously to reduce load
+    for (const fileId of fileIds) {
+      await processRawDataFile(fileId);
+    }
+
+    res.status(200).send({ id: collectionId, fileIds });
+  }
+);
 
 router.get(
   "/",

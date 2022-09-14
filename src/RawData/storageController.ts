@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { readFile, writeFile, mkdir, readdir, rm } from "fs/promises";
 import fs from "fs";
 import dotenv from "dotenv";
 import path from "node:path";
@@ -37,12 +37,17 @@ if (process.env.DATA_PATH) {
 }
 
 const storage = diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, path.join(process.env.DATA_PATH, UNPROCESSED_FOLDER));
+  destination: async (req, file, callback) => {
+    const folder = path.join(
+      process.env.DATA_PATH,
+      UNPROCESSED_FOLDER,
+      req.body.fileId
+    );
+    await mkdir(folder, { recursive: true });
+    callback(null, folder);
   },
   filename: (req, file, callback) => {
-    const filenameId = uuidv4();
-    callback(null, filenameId + ".json");
+    callback(null, req.body.chunkCount);
   }
 });
 export const upload = multer({ storage });
@@ -66,25 +71,26 @@ export const readRawDataParameter = async (
   }
 };
 
-export const processRawDataFile = async (fileId: string) => {
-  const filepath = path.join(
-    process.env.DATA_PATH,
-    UNPROCESSED_FOLDER,
-    fileId + ".json"
-  );
-  console.log("Processing", filepath);
+const createStreamFromChunks = async (filePath: string) => {
+  const fileStream = new stream.PassThrough();
+  const chunks = await readdir(filePath);
+  for (const chunk of chunks) {
+    const buffer = await readFile(path.join(filePath, chunk));
+    fileStream.write(buffer);
+  }
+  fileStream.end();
 
-  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
-    recursive: true
-  });
+  return fileStream;
+};
 
-  const buffer = await readFile(filepath);
-  const bufferStream = new stream.PassThrough();
-  bufferStream.end(buffer);
-
-  await new Promise((resolve, reject) => {
-    const outstandingFunctions: (() => {})[] = [];
-    bufferStream
+const splitRawDataStreamIntoParameters = async (
+  fileStream: stream.PassThrough,
+  fileId: string,
+  filePath: string
+) =>
+  new Promise((resolve, reject) => {
+    const outstandingFunctions: (() => Promise<void>)[] = [];
+    fileStream
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
         // TODO: Pause stream until processed
@@ -114,8 +120,20 @@ export const processRawDataFile = async (fileId: string) => {
         for (const parmeterFunction of outstandingFunctions) {
           await parmeterFunction();
         }
-        console.log("Finished processing", filepath);
+        console.log("Finished processing", filePath);
         resolve(undefined);
       });
   });
+
+export const processRawDataFile = async (fileId: string) => {
+  const filePath = path.join(process.env.DATA_PATH, UNPROCESSED_FOLDER, fileId);
+  console.log("Processing", filePath);
+  await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
+    recursive: true
+  });
+
+  const fileStream = await createStreamFromChunks(filePath);
+  await splitRawDataStreamIntoParameters(fileStream, fileId, filePath);
+
+  await rm(filePath, { recursive: true });
 };
