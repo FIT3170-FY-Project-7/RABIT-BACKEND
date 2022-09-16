@@ -41,7 +41,7 @@ export const validateType = (rawData: any, validator: t.TypeC<any>): any => {
  *                       Should throw an error if validation fails
  * @returns Either the next function in the call chain, or sends a response with status 400
  */
-const validateBody = (typeValidator: t.TypeC<any>, valueValidator?: Function) => {
+const validateBody = (typeValidator: t.TypeC<any>, valueValidator?: ErrorFunction) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
             validateType(req.body, typeValidator);
@@ -56,5 +56,9 @@ const validateBody = (typeValidator: t.TypeC<any>, valueValidator?: Function) =>
         }
     };
 };
+
+interface ErrorFunction {
+    (body: any): Error
+}
 
 export default validateBody;
