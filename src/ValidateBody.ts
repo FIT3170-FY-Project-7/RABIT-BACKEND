@@ -38,16 +38,22 @@ export const validateType = (rawData: any, validator: t.TypeC<any>): any => {
  * otherwise forwards functionality to the next function in the endpoint
  * @param typeValidator An io-ts validator class to check the Request's body against
  * @param valueValidator An optional validator function to do more complex validation than just type validation.
- *                       Should throw an error if validation fails
+ *                       Should return an error if validation fails
  * @returns Either the next function in the call chain, or sends a response with status 400
  */
 const validateBody = (typeValidator: t.TypeC<any>, valueValidator?: ErrorFunction) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
+            // Perform type validation
             validateType(req.body, typeValidator);
             
+            // If we are passed the optional validator function, then use it
             if (typeof valueValidator !== undefined) {
-                valueValidator(req.body);
+                const err = valueValidator(req.body);
+                
+                if (err instanceof Error) {
+                    throw err;
+                }
             }
 
             return next();
@@ -57,8 +63,11 @@ const validateBody = (typeValidator: t.TypeC<any>, valueValidator?: ErrorFunctio
     };
 };
 
+/**
+ * A function that takes the request body as input and returns either an Error or undefined
+ */
 interface ErrorFunction {
-    (body: any): Error
+    (body: any): Error | void
 }
 
 export default validateBody;
