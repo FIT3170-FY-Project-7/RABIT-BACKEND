@@ -1,13 +1,11 @@
 export const INSERT_CORNER_PLOT = `INSERT INTO corner_plot VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
 
-export const INSERT_PARAMETER_CONFIG = `INSERT INTO parameter_config VALUES (?, ?, ?, ?);`;
-
 export const INSERT_PARAMETER_CONFIG_NO_PARAM_ID = `
 INSERT INTO parameter_config
 VALUE (?, (SELECT parameter_id
             FROM base_parameter
             WHERE file_id = ?
-                AND parameter_name = ?), ?, ?)
+                AND parameter_name = ?), ?, ?, ?)
 `;
 
 export const INSERT_DATASET_CONFIG = `INSERT INTO dataset_config VALUES (?, ?, ?, ?, ?, ?, ?);`;
@@ -22,7 +20,8 @@ export const GET_PARAMETER_CONFIGS_FOR_PLOT = `SELECT bp.parameter_id AS paramet
        parameter_name,
        file_id,
        domain_max,
-       domain_min
+       domain_min,
+       label_text
 FROM parameter_config pc
          JOIN base_parameter bp ON pc.parameter_id = bp.parameter_id
 WHERE corner_id = ?;`;

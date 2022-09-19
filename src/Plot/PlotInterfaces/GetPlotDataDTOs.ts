@@ -6,6 +6,7 @@ export interface ParameterConfigRow extends RowDataPacket {
   file_id: string;
   domain_max: string;
   domain_min: string;
+  label_text: string;
 }
 
 export type ParameterConfigParsed = {
@@ -13,6 +14,7 @@ export type ParameterConfigParsed = {
   parameter_name: string;
   file_id: string;
   domain: [number, number];
+  label_text: string;
 };
 
 export interface BaseParameterRow extends RowDataPacket {

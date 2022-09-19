@@ -70,23 +70,27 @@ router.post(
   "/process",
   validateBody(RawDataProcessValidator),
   async (req: TypedRequestBody<RawDataProcess>, res: Response) => {
-    const uploadId = uuidv4();
     const collectionId = uuidv4();
     const fileIds: string[] | undefined = req.body.fileIds;
 
     // Insert plot collection and upload
     await databaseConnection.query(INSERT_UPLOAD, [
-      uploadId,
-      TEMP_USER,
-      toDBDate(new Date()),
       collectionId,
+      TEMP_USER,
       req.body.title,
-      req.body.description
+      req.body.description,
+      toDBDate(new Date()),
+      toDBDate(new Date())
     ]);
 
     // Insert file pointers simultaneously
     const fileInserts = fileIds?.map((fileId) =>
-      databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
+      // TODO: work out how to get the file names here
+      databaseConnection.query(INSERT_FILE, [
+        fileId,
+        collectionId,
+        "File name here"
+      ])
     );
     await Promise.all(fileInserts);
 
