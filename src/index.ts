@@ -34,6 +34,10 @@ app.use(router);
 // instead
 app.use(badRequestErrorHandler);
 
+// Disable http header that reveals this is express.
+// more info: https://www.troyhunt.com/shhh-dont-let-your-response-headers/
+app.disable('x-powered-by');
+
 const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Backend is running at http://localhost:${port}`);
