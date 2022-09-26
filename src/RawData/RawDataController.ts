@@ -134,7 +134,7 @@ router.get(
     const parameter_name = baseParameter[0].parameter_name;
     const parameter_label = isKeyOf(posterior_labels, parameter_name)
       ? posterior_labels[parameter_name]
-      : parameter_name;
+      : parameter_name.replace(/_/g, " ");
 
     res.status(200).send({
       fileId,
