@@ -35,7 +35,7 @@ export interface PlotCollection extends RowDataPacket {
 
 export interface FilePointer extends RowDataPacket {
   file_id: string;
-  upload_id: string;
+  file_name: string;
   collection_id: string;
 }
 

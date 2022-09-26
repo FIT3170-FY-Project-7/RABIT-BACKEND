@@ -28,7 +28,8 @@ import {
   RawDataFileIds,
   RawDataProcess,
   RawDataChunk,
-  RawDataChunkValidator
+  RawDataChunkValidator,
+  FileDetails
 } from "./RawDataInterfaces/RawDataValidators";
 import { TypedRequestBody } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
@@ -73,7 +74,7 @@ router.post(
   validateBody(RawDataProcessValidator),
   async (req: TypedRequestBody<RawDataProcess>, res: Response) => {
     const collectionId = uuidv4();
-    const fileIds: string[] | undefined = req.body.fileIds;
+    const fileDetailsArray: FileDetails[] | undefined = req.body.fileDetails;
 
     // Insert plot collection and upload
     await databaseConnection.query(INSERT_UPLOAD, [
@@ -86,22 +87,23 @@ router.post(
     ]);
 
     // Insert file pointers simultaneously
-    const fileInserts = fileIds?.map((fileId) =>
-      // TODO: work out how to get the file names here
+    const fileInserts = fileDetailsArray?.map((fileDetails) =>
       databaseConnection.query(INSERT_FILE, [
-        fileId,
+        fileDetails.id,
         collectionId,
-        "File name here"
+        fileDetails.name
       ])
     );
     await Promise.all(fileInserts);
 
     // Don't process simultaneously to reduce load
-    for (const fileId of fileIds) {
-      await processRawDataFile(fileId);
+    for (const fileDetails of fileDetailsArray) {
+      await processRawDataFile(fileDetails.id);
     }
 
-    res.status(200).send({ id: collectionId, fileIds });
+    res
+      .status(200)
+      .send({ id: collectionId, fileDetailsArray: fileDetailsArray });
   }
 );
 
@@ -130,7 +132,9 @@ router.get(
     const fileId = baseParameter[0].file_id;
     const posterior_data = await readRawDataParameter(fileId, parameterId);
     const parameter_name = baseParameter[0].parameter_name;
-    const parameter_label = isKeyOf(posterior_labels, parameter_name) ? posterior_labels[parameter_name] : parameter_name;
+    const parameter_label = isKeyOf(posterior_labels, parameter_name)
+      ? posterior_labels[parameter_name]
+      : parameter_name;
 
     res.status(200).send({
       fileId,
@@ -163,11 +167,20 @@ router.get(
 
     const title = rows[0].collection_title;
     const description = rows[0].collection_description;
-    const fileIds = [...new Set(rows.map((row) => row.file_id))];
-    const files = fileIds.map((fileId) => ({
-      fileId,
+    const fileDetailsArray = [
+      ...new Map(
+        rows.map((row) => [
+          row.file_id,
+          { file_id: row.file_id, file_name: row.file_name }
+        ])
+      ).values()
+    ];
+
+    const files = fileDetailsArray.map((fileDetails) => ({
+      fileId: fileDetails.file_id,
+      fileName: fileDetails.file_name,
       parameters: rows
-        .filter((row) => row.file_id === fileId)
+        .filter((row) => row.file_id === fileDetails.file_id)
         .map((row) => ({ id: row.parameter_id, name: row.parameter_name }))
     }));
 
