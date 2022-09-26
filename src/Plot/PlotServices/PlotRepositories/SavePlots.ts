@@ -68,9 +68,7 @@ const insertParameterConfigs = async (
       const file_id = parameterConfig.file_id;
       const domain_min = parameterConfig.domain[0].toString();
       const domain_max = parameterConfig.domain[1].toString();
-
-      // TODO: update the label text here with the real values
-      const label_text = "sample label text";
+      const label_text = parameterConfig.display_text;
 
       await databaseConnection.query(INSERT_PARAMETER_CONFIG_NO_PARAM_ID, [
         corner_id,

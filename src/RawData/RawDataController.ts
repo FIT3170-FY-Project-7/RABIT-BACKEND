@@ -35,6 +35,8 @@ import validateBody from "../ValidateBody";
 import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
 import databasePool from "../databaseConnection";
 import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
+import posterior_labels from "../posterior_latex_labels.json";
+import { isKeyOf } from "../utils";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -126,13 +128,16 @@ router.get(
       [parameterId]
     );
     const fileId = baseParameter[0].file_id;
-    const posterior = await readRawDataParameter(fileId, parameterId);
+    const posterior_data = await readRawDataParameter(fileId, parameterId);
+    const parameter_name = baseParameter[0].parameter_name;
+    const parameter_label = isKeyOf(posterior_labels, parameter_name) ? posterior_labels[parameter_name] : parameter_name;
 
     res.status(200).send({
       fileId,
       parameterId,
-      parameterName: baseParameter[0].parameter_name,
-      posterior
+      parameterName: parameter_name,
+      parameterLabel: parameter_label,
+      posterior: posterior_data
     });
   }
 );
