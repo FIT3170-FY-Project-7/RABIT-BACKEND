@@ -28,7 +28,9 @@ import {
   RawDataFileIds,
   RawDataProcess,
   RawDataChunk,
-  RawDataChunkValidator
+  RawDataChunkValidator,
+  RawDataParamBooleans,
+  RawDataFileParameterBuckets
 } from "./RawDataInterfaces/RawDataValidators";
 import { TypedRequestBody } from "src/TypedExpressIO";
 import validateBody from "../ValidateBody";
@@ -51,6 +53,18 @@ router.post(
 
     res.status(200).send({
       fileIds
+    });
+  }
+);
+
+router.post(
+  "/param-buckets",
+  validateBody(RawDataFileParameterBuckets),
+  (req: TypedRequestBody<RawDataParamBooleans>, res: Response) => {
+    const buckets = req.body.buckets
+    console.log(buckets)
+    res.status(200).send({
+      buckets
     });
   }
 );

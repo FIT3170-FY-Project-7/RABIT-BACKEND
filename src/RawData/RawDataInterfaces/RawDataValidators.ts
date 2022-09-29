@@ -9,6 +9,9 @@ export type RawDataGet = t.TypeOf<typeof RawDataGetValidator>;
 export const RawDataFileIdsValidator = t.type({ fileCount: t.number });
 export type RawDataFileIds = t.TypeOf<typeof RawDataFileIdsValidator>;
 
+export const RawDataFileParameterBuckets = t.type({buckets: t.array(t.boolean)});
+export type RawDataParamBooleans = t.TypeOf<typeof RawDataFileParameterBuckets>;
+
 export const RawDataProcessValidator = t.type({
   title: t.string,
   description: t.string,
