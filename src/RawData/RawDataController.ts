@@ -1,40 +1,30 @@
-import { Router, Request, Response } from "express";
-import databaseConnection, {
-  FilePointer,
+import { Response, Router } from "express";
+import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
+import { TypedRequestBody } from "src/TypedExpressIO";
+import { v4 as uuidv4 } from "uuid";
+import {
+  default as databaseConnection, default as databasePool, FilePointer,
   PlotCollection,
   toDBDate,
   Upload
 } from "../databaseConnection";
-import { v4 as uuidv4 } from "uuid";
+import validateBody from "../ValidateBody";
+import {
+  RawDataChunk,
+  RawDataChunkValidator, RawDataFileIds, RawDataFileIdsValidator, RawDataGet,
+  RawDataGetValidator,
+  RawDataList,
+  RawDataListValidator, RawDataProcess, RawDataProcessValidator
+} from "./RawDataInterfaces/RawDataValidators";
+import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
 import {
   processRawDataFile,
   readRawDataParameter,
   upload
 } from "./storageController";
 import {
-  INSERT_UPLOAD,
-  INSERT_FILE,
-  GET_ALL_PLOT_COLLECTIONS,
-  GET_COLLECTIONS_FOR_USER,
-  GET_BASE_PARAMETER
+  GET_ALL_PLOT_COLLECTIONS, GET_BASE_PARAMETER, GET_COLLECTIONS_FOR_USER, INSERT_FILE, INSERT_UPLOAD
 } from "./uploadSql";
-import {
-  RawDataGet,
-  RawDataGetValidator,
-  RawDataList,
-  RawDataListValidator,
-  RawDataFileIdsValidator,
-  RawDataProcessValidator,
-  RawDataFileIds,
-  RawDataProcess,
-  RawDataChunk,
-  RawDataChunkValidator
-} from "./RawDataInterfaces/RawDataValidators";
-import { TypedRequestBody } from "src/TypedExpressIO";
-import validateBody from "../ValidateBody";
-import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
-import databasePool from "../databaseConnection";
-import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -89,7 +79,6 @@ router.post(
       databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
     );
     await Promise.all(fileInserts);
-
     // Don't process simultaneously to reduce load
     for (const fileId of fileIds) {
       await processRawDataFile(fileId);
