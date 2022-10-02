@@ -1,8 +1,9 @@
- -- Database setup file for RABIT
+-- Database setup file for RABIT
 -- ==============================
 -- WARNING!
 -- Running this file will DELETE ALL EXISTING DATA if the database is already configured
 -- ==============================
+
 SET foreign_key_checks = 0;
 
 DROP TABLE IF EXISTS rabit_user;
@@ -183,3 +184,8 @@ ALTER TABLE dataset_sigma
 ALTER TABLE dataset_quantile
     ADD CONSTRAINT dataset_quantile_dataset_config FOREIGN KEY (dataconf_id) REFERENCES
         dataset_config (dataconf_id) ON DELETE CASCADE;
+
+
+-- Create a temporary user
+INSERT INTO rabit_user
+    VALUES ('temp', 'temp', 'temp@rabit.com');
