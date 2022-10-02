@@ -12,7 +12,8 @@ export type RawDataFileIds = t.TypeOf<typeof RawDataFileIdsValidator>;
 export const RawDataProcessValidator = t.type({
   title: t.string,
   description: t.string,
-  fileIds: t.array(t.string)
+  fileIds: t.array(t.string),
+  selectedBuckets: t.array(t.boolean)
 });
 export type RawDataProcess = t.TypeOf<typeof RawDataProcessValidator>;
 

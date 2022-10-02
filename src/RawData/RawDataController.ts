@@ -73,6 +73,7 @@ router.post(
     const uploadId = uuidv4();
     const collectionId = uuidv4();
     const fileIds: string[] | undefined = req.body.fileIds;
+    const selectedBuckets = req.body.selectedBuckets
 
     // Insert plot collection and upload
     await databaseConnection.query(INSERT_UPLOAD, [
@@ -92,9 +93,8 @@ router.post(
 
     // Don't process simultaneously to reduce load
     for (const fileId of fileIds) {
-      await processRawDataFile(fileId);
+      await processRawDataFile(fileId, selectedBuckets);
     }
-
     res.status(200).send({ id: collectionId, fileIds });
   }
 );

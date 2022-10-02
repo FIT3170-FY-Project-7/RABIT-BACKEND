@@ -11,6 +11,9 @@ import JSONStream from "JSONStream";
 import stream from "node:stream";
 import databasePool from "../databaseConnection";
 import { INSERT_BASE_PARAMETER } from "./uploadSql";
+import { array } from "fp-ts";
+import { boolean } from "io-ts";
+import { intrinsicParameters, extrinsicParameters } from "./parameterBuckets"
 
 const UNPROCESSED_FOLDER = "unprocessed";
 const PROCESSED_FOLDER = "processed";
@@ -86,32 +89,46 @@ const createStreamFromChunks = async (filePath: string) => {
 const splitRawDataStreamIntoParameters = async (
   fileStream: stream.PassThrough,
   fileId: string,
-  filePath: string
+  filePath: string,
+  selectedBuckets: boolean[]
 ) =>
   new Promise((resolve, reject) => {
+    // console.log(selectedBuckets)
+    // console.log(intrinsicParameters)
     const outstandingFunctions: (() => Promise<void>)[] = [];
     fileStream
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
+
+        if ((selectedBuckets[0] == true && intrinsicParameters.includes(data.key)) ||
+        (selectedBuckets[1] == true && extrinsicParameters.includes(data.key)) ||
+        ((selectedBuckets[2] == true && (
+            !(intrinsicParameters.includes(data.key))
+            && !(extrinsicParameters.includes(data.key))
+          ))
+        )) {
+          console.log(data.key.toString())
+          const saveParameter = async () => {
+            const parameterId = uuidv4();
+            const filepath = path.join(
+              process.env.DATA_PATH,
+              PROCESSED_FOLDER,
+              fileId,
+              parameterId + ".json"
+            );
+            await databasePool.query(INSERT_BASE_PARAMETER, [
+              parameterId,
+              data.key,
+              fileId
+            ]);
+            await writeFile(filepath, JSON.stringify(data.value), {
+              flag: "w+"
+            });
+          };
+          outstandingFunctions.push(saveParameter);
+        }
+      
         // TODO: Pause stream until processed
-        const saveParameter = async () => {
-          const parameterId = uuidv4();
-          const filepath = path.join(
-            process.env.DATA_PATH,
-            PROCESSED_FOLDER,
-            fileId,
-            parameterId + ".json"
-          );
-          await databasePool.query(INSERT_BASE_PARAMETER, [
-            parameterId,
-            data.key,
-            fileId
-          ]);
-          await writeFile(filepath, JSON.stringify(data.value), {
-            flag: "w+"
-          });
-        };
-        outstandingFunctions.push(saveParameter);
       })
       .on("error", (err: any) => reject(err))
       .on("end", async () => {
@@ -125,7 +142,7 @@ const splitRawDataStreamIntoParameters = async (
       });
   });
 
-export const processRawDataFile = async (fileId: string) => {
+export const processRawDataFile = async (fileId: string, selectedBuckets: boolean[]) => {
   const filePath = path.join(process.env.DATA_PATH, UNPROCESSED_FOLDER, fileId);
   console.log("Processing", filePath);
   await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
@@ -133,7 +150,6 @@ export const processRawDataFile = async (fileId: string) => {
   });
 
   const fileStream = await createStreamFromChunks(filePath);
-  await splitRawDataStreamIntoParameters(fileStream, fileId, filePath);
-
+  await splitRawDataStreamIntoParameters(fileStream, fileId, filePath, selectedBuckets);
   await rm(filePath, { recursive: true });
 };
