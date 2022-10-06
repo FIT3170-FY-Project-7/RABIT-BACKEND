@@ -3,28 +3,14 @@ import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
 import { TypedRequestBody } from "src/TypedExpressIO";
 import { v4 as uuidv4 } from "uuid";
 import {
-  default as databaseConnection, default as databasePool, FilePointer,
+  default as databaseConnection,
+  default as databasePool,
+  FilePointer,
   PlotCollection,
   toDBDate,
   Upload
 } from "../databaseConnection";
 import validateBody from "../ValidateBody";
-import {
-  RawDataChunk,
-  RawDataChunkValidator, RawDataFileIds, RawDataFileIdsValidator, RawDataGet,
-  RawDataGetValidator,
-  RawDataList,
-  RawDataListValidator, RawDataProcess, RawDataProcessValidator
-} from "./RawDataInterfaces/RawDataValidators";
-import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
-import {
-  processRawDataFile,
-  readRawDataParameter,
-  upload
-} from "./storageController";
-import {
-  GET_ALL_PLOT_COLLECTIONS, GET_BASE_PARAMETER, GET_COLLECTIONS_FOR_USER, INSERT_FILE, INSERT_UPLOAD
-} from "./uploadSql";
 import {
   RawDataGet,
   RawDataGetValidator,
@@ -38,11 +24,19 @@ import {
   RawDataChunkValidator,
   FileDetails
 } from "./RawDataInterfaces/RawDataValidators";
-import { TypedRequestBody } from "src/TypedExpressIO";
-import validateBody from "../ValidateBody";
 import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
-import databasePool from "../databaseConnection";
-import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
+import {
+  processRawDataFile,
+  readRawDataParameter,
+  upload
+} from "./storageController";
+import {
+  GET_ALL_PLOT_COLLECTIONS,
+  GET_BASE_PARAMETER,
+  GET_COLLECTIONS_FOR_USER,
+  INSERT_FILE,
+  INSERT_UPLOAD
+} from "./uploadSql";
 import posterior_labels from "../posterior_latex_labels.json";
 import { isKeyOf } from "../utils";
 
