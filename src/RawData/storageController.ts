@@ -107,7 +107,6 @@ const splitRawDataStreamIntoParameters = async (
             && !(extrinsicParameters.includes(data.key))
           ))
         )) {
-          console.log(data.key.toString())
           const saveParameter = async () => {
             const parameterId = uuidv4();
             const filepath = path.join(
