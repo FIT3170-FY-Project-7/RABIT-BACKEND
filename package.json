@@ -16,6 +16,7 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^2.3.3",
     "newtype-ts": "^0.3.5",
+    "replacestream": "^4.0.3",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
@@ -23,6 +24,7 @@
     "@types/express": "^4.17.13",
     "@types/multer": "^1.4.7",
     "@types/node": "^17.0.23",
+    "@types/replacestream": "^4.0.1",
     "@types/uuid": "^8.3.4",
     "concurrently": "^7.0.0",
     "nodemon": "^2.0.19",
