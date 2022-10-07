@@ -18,7 +18,10 @@ export function badRequestErrorHandler(err: any, req: Request, res: Response, ne
     }
     let errObject = new BadRequestResponse(err.message, req.path);
     addResponseHeaders(res);
-    res.status(err.status);
+
+    console.error(err.stack)
+
+    res.status(errObject.status);
     res.json(errObject);
 }
 
