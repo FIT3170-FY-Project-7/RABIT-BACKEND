@@ -1,9 +1,9 @@
 {
   "chirp_mass": "$\\mathcal{M} \\ [M_{\\odot}]$",
   "mass_ratio": "$q$",
-  "mass_1": "$m_1 \\ ({\\rm Lab}) \\ [M_{\\odot}]$",
-  "mass_2": "$m_2 \\ ({\\rm Lab}) \\ [M_{\\odot}]$",
-  "total_mass": "$M \\ ({\\rm Lab}) \\ [M_{\\odot}]$",
+  "mass_1": "$m_1^{\\rm Lab} \\ [M_{\\odot}]$",
+  "mass_2": "$m_2^{\\rm Lab} \\ [M_{\\odot}]$",
+  "total_mass": "$M^{\\rm Lab} \\ [M_{\\odot}]$",
   "mass_1_source": "$m_1^{\\rm Source} \\ [M_{\\odot}]$",
   "mass_2_source": "$m_2^{\\rm Source} \\ [M_{\\odot}]$",
   "total_mass_source": "$M^{\\rm Source} \\ [M_{\\odot}]$",
