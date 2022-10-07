@@ -4,15 +4,12 @@
 INSERT INTO rabit_user
 VALUES ('temp', 'temp', 'temp@rabit.com');
 
-INSERT INTO upload
-VALUES ('upload id', 'temp', NULL);
-
 INSERT INTO plot_collection
-VALUES ('collection_id', 'temp title', NULL);
+VALUES ('collection_id', 'temp', 'temp title', NULL, NOW(), NOW());
 
 INSERT INTO file_pointer
-VALUES ('file_id', 'upload id', 'collection_id'),
-       ('file id 2', 'upload_id', 'collection_id');
+VALUES ('file_id', 'collection_id', 'file 1'),
+       ('file id 2', 'collection_id', 'file 2');
 
 INSERT INTO base_parameter
 VALUES ('param id', 'name', 'file_id'),
