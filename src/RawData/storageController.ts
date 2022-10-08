@@ -132,6 +132,11 @@ const splitRawDataStreamIntoParameters = async (
       .on("error", (err: any) => reject(err))
       .on("end", async () => {
         console.log("Waiting for parameters");
+
+        if(outstandingFunctions.length == 0){
+          reject(new Error("No valid Parameters"))
+        }
+
         // Wait sequentially to avoid database from timing out
         for (const parmeterFunction of outstandingFunctions) {
           await parmeterFunction();
