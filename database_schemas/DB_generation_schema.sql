@@ -173,8 +173,3 @@ ALTER TABLE dataset_sigma
 ALTER TABLE dataset_quantile
     ADD CONSTRAINT dataset_quantile_dataset_config FOREIGN KEY (dataconf_id) REFERENCES
         dataset_config (dataconf_id) ON DELETE CASCADE;
-
-
--- Create a temporary user
-INSERT INTO rabit_user
-    VALUES ('temp', 'temp', 'temp@rabit.com');
