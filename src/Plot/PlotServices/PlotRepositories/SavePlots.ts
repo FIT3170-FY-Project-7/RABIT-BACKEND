@@ -5,7 +5,6 @@ import {
 } from "../../PlotInterfaces/SavePlotData";
 import {
   INSERT_CORNER_PLOT,
-  INSERT_PARAMETER_CONFIG,
   INSERT_DATASET_CONFIG,
   INSERT_DATASET_QUANTILE,
   INSERT_DATASET_SIGMA,
@@ -67,15 +66,17 @@ const insertParameterConfigs = async (
     parameterConfigs.map(async (parameterConfig) => {
       const name = parameterConfig.name;
       const file_id = parameterConfig.file_id;
-      const domain_min = parameterConfig.domain[0];
-      const domain_max = parameterConfig.domain[1];
+      const domain_min = parameterConfig.domain[0].toString();
+      const domain_max = parameterConfig.domain[1].toString();
+      const label_text = parameterConfig.display_text;
 
       await databaseConnection.query(INSERT_PARAMETER_CONFIG_NO_PARAM_ID, [
         corner_id,
         file_id,
         name,
         domain_max,
-        domain_min
+        domain_min,
+        label_text
       ]);
     })
   );

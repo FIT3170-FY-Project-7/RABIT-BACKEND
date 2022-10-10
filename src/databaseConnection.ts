@@ -25,7 +25,7 @@ const databasePool = mysql
   })
   .promise();
 
-export const toDBDate = (date: Date) => date.toISOString().split("T")[0];
+export const toDBDate = (date: Date) => date.toISOString().slice(0, 19).replace('T', ' ');
 
 export interface PlotCollection extends RowDataPacket {
   collection_id: string;
@@ -35,7 +35,7 @@ export interface PlotCollection extends RowDataPacket {
 
 export interface FilePointer extends RowDataPacket {
   file_id: string;
-  upload_id: string;
+  file_name: string;
   collection_id: string;
 }
 

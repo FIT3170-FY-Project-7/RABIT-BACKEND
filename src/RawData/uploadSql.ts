@@ -1,6 +1,5 @@
 export const INSERT_UPLOAD = `
-INSERT INTO upload VALUES (?, ?, ?);
-INSERT INTO plot_collection VALUES (?, ?, ?);
+INSERT INTO plot_collection VALUES (?, ?, ?, ?, ?, ?);
 `;
 
 export const INSERT_FILE = `
@@ -24,9 +23,8 @@ SELECT * FROM base_parameter WHERE parameter_id = ?
 `;
 
 export const GET_COLLECTIONS_FOR_USER = `
-SELECT p.collection_title, p.collection_id, max(c.last_modified) AS last_modified
-FROM (corner_plot c LEFT JOIN plot_collection p ON p.collection_id = c.collection_id)
-WHERE c.user_id = 'temp'
-GROUP BY p.collection_id
+SELECT collection_title, collection_id, last_modified
+FROM plot_collection
+WHERE user_id = ?
 ORDER BY last_modified DESC;
 `;
