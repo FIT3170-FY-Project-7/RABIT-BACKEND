@@ -4,7 +4,8 @@ import { nonEmptyArray, date } from "io-ts-types";
 const PlotParamsValidator = t.type({
   name: t.string,
   file_id: t.string,
-  domain: t.tuple([t.number, t.number])
+  domain: t.tuple([t.number, t.number]),
+  display_text: t.string
 });
 
 export type PlotParams = t.TypeOf<typeof PlotParamsValidator>;

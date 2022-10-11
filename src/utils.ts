@@ -12,3 +12,15 @@ export function addResponseHeaders<T>(res: Response<T>) {
     res.set("X-Content-Type-Options", "nosniff");
     res.set("X-Frame-Options", "DENY");
 }
+
+/**
+ * Checks whether an arbitrary value is the the key of an object
+ * 
+ * Reference: https://stackoverflow.com/a/53521213
+ * @param obj Object to check in
+ * @param possibleKey Key to check for in obj
+ * @returns Boolean indicating whether possibleKey is a key of obj
+ */
+export function isKeyOf<T extends object>(obj: T, possibleKey: keyof any): possibleKey is keyof T {
+    return possibleKey in obj;
+  }

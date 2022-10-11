@@ -1,23 +1,16 @@
-import { Router, Request, Response } from "express";
-import databaseConnection, {
+import { Response, Router } from "express";
+import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
+import { TypedRequestBody } from "src/TypedExpressIO";
+import { v4 as uuidv4 } from "uuid";
+import {
+  default as databaseConnection,
+  default as databasePool,
   FilePointer,
   PlotCollection,
   toDBDate,
   Upload
 } from "../databaseConnection";
-import { v4 as uuidv4 } from "uuid";
-import {
-  processRawDataFile,
-  readRawDataParameter,
-  upload
-} from "./storageController";
-import {
-  INSERT_UPLOAD,
-  INSERT_FILE,
-  GET_ALL_PLOT_COLLECTIONS,
-  GET_COLLECTIONS_FOR_USER,
-  GET_BASE_PARAMETER
-} from "./uploadSql";
+import validateBody from "../ValidateBody";
 import {
   RawDataGet,
   RawDataGetValidator,
@@ -28,13 +21,24 @@ import {
   RawDataFileIds,
   RawDataProcess,
   RawDataChunk,
-  RawDataChunkValidator
+  RawDataChunkValidator,
+  FileDetails
 } from "./RawDataInterfaces/RawDataValidators";
-import { TypedRequestBody } from "src/TypedExpressIO";
-import validateBody from "../ValidateBody";
 import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
-import databasePool from "../databaseConnection";
-import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
+import {
+  processRawDataFile,
+  readRawDataParameter,
+  upload
+} from "./storageController";
+import {
+  GET_ALL_PLOT_COLLECTIONS,
+  GET_BASE_PARAMETER,
+  GET_COLLECTIONS_FOR_USER,
+  INSERT_FILE,
+  INSERT_UPLOAD
+} from "./uploadSql";
+import posterior_labels from "../posterior_latex_labels.json";
+import { isKeyOf } from "../utils";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
@@ -70,32 +74,41 @@ router.post(
   "/process",
   validateBody(RawDataProcessValidator),
   async (req: TypedRequestBody<RawDataProcess>, res: Response) => {
-    const uploadId = uuidv4();
     const collectionId = uuidv4();
-    const fileIds: string[] | undefined = req.body.fileIds;
+
+    const fileDetailsArray: FileDetails[] | undefined = req.body.fileDetails;
     const selectedBuckets = req.body.selectedBuckets
+
 
     // Insert plot collection and upload
     await databaseConnection.query(INSERT_UPLOAD, [
-      uploadId,
-      TEMP_USER,
-      toDBDate(new Date()),
       collectionId,
+      TEMP_USER,
       req.body.title,
-      req.body.description
+      req.body.description,
+      toDBDate(new Date()),
+      toDBDate(new Date())
     ]);
 
     // Insert file pointers simultaneously
-    const fileInserts = fileIds?.map((fileId) =>
-      databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
+    const fileInserts = fileDetailsArray?.map((fileDetails) =>
+      databaseConnection.query(INSERT_FILE, [
+        fileDetails.id,
+        collectionId,
+        fileDetails.name
+      ])
     );
     await Promise.all(fileInserts);
-
     // Don't process simultaneously to reduce load
-    for (const fileId of fileIds) {
-      await processRawDataFile(fileId, selectedBuckets);
+
+    for (const fileDetails of fileDetailsArray) {
+      await processRawDataFile(fileDetails.id, selectedBuckets);
     }
-    res.status(200).send({ id: collectionId, fileIds });
+
+    res
+      .status(200)
+      .send({ id: collectionId, fileDetailsArray: fileDetailsArray });
+
   }
 );
 
@@ -122,13 +135,18 @@ router.get(
       [parameterId]
     );
     const fileId = baseParameter[0].file_id;
-    const posterior = await readRawDataParameter(fileId, parameterId);
+    const posterior_data = await readRawDataParameter(fileId, parameterId);
+    const parameter_name = baseParameter[0].parameter_name;
+    const parameter_label = isKeyOf(posterior_labels, parameter_name)
+      ? posterior_labels[parameter_name]
+      : parameter_name.replace(/_/g, " ");
 
     res.status(200).send({
       fileId,
       parameterId,
-      parameterName: baseParameter[0].parameter_name,
-      posterior
+      parameterName: parameter_name,
+      parameterLabel: parameter_label,
+      posterior: posterior_data
     });
   }
 );
@@ -154,11 +172,20 @@ router.get(
 
     const title = rows[0].collection_title;
     const description = rows[0].collection_description;
-    const fileIds = [...new Set(rows.map((row) => row.file_id))];
-    const files = fileIds.map((fileId) => ({
-      fileId,
+    const fileDetailsArray = [
+      ...new Map(
+        rows.map((row) => [
+          row.file_id,
+          { file_id: row.file_id, file_name: row.file_name }
+        ])
+      ).values()
+    ];
+
+    const files = fileDetailsArray.map((fileDetails) => ({
+      fileId: fileDetails.file_id,
+      fileName: fileDetails.file_name,
       parameters: rows
-        .filter((row) => row.file_id === fileId)
+        .filter((row) => row.file_id === fileDetails.file_id)
         .map((row) => ({ id: row.parameter_id, name: row.parameter_name }))
     }));
 

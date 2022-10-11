@@ -1,14 +1,14 @@
-import { readFile, writeFile, mkdir, readdir, rm } from "fs/promises";
-import fs from "fs";
 import dotenv from "dotenv";
+import fs from "fs";
+import { mkdir, readdir, readFile, rm, writeFile } from "fs/promises";
+import multer, { diskStorage } from "multer";
 import path from "node:path";
-import { diskStorage } from "multer";
 import { v4 as uuidv4 } from "uuid";
-import multer from "multer";
 // must ignore because tsc does not recognise @types/jsonstream as type declaration of JSONStream
 // @ts-ignore
 import JSONStream from "JSONStream";
 import stream from "node:stream";
+import replacestream from "replacestream";
 import databasePool from "../databaseConnection";
 import { INSERT_BASE_PARAMETER } from "./uploadSql";
 import { array } from "fp-ts";
@@ -97,6 +97,7 @@ const splitRawDataStreamIntoParameters = async (
     // console.log(intrinsicParameters)
     const outstandingFunctions: (() => Promise<void>)[] = [];
     fileStream
+      .pipe(replacestream(/:\s*Infinity/g,':null'))
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
 

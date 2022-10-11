@@ -43,7 +43,8 @@ export const parseParameterConfigRows = (
       parameter_id: parameterConfigRow.parameter_id,
       parameter_name: parameterConfigRow.parameter_name,
       file_id: parameterConfigRow.file_id,
-      domain: [+parameterConfigRow.domain_min, +parameterConfigRow.domain_max]
+      domain: [+parameterConfigRow.domain_min, +parameterConfigRow.domain_max],
+      label_text: parameterConfigRow.label_text
     };
   });
 };
