@@ -126,8 +126,7 @@ const splitRawDataStreamIntoParameters = async (
           };
           outstandingFunctions.push(saveParameter);
         }
-      
-        // TODO: Pause stream until processed
+    
       })
       .on("error", (err: any) => reject(err))
       .on("end", async () => {
