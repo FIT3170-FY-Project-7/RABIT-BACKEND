@@ -13,7 +13,10 @@ import databasePool from "../databaseConnection";
 import { INSERT_BASE_PARAMETER } from "./uploadSql";
 import { array } from "fp-ts";
 import { boolean } from "io-ts";
-import { intrinsicParameters, extrinsicParameters } from "../../../sharedData/parameterBuckets"
+import parameters from "../../../sharedData/parameterBuckets.json"
+
+const intrinsicParameters = parameters.intrinsicParameters
+const extrinsicParameters = parameters.extrinsicParameters
 
 const UNPROCESSED_FOLDER = "unprocessed";
 const PROCESSED_FOLDER = "processed";
