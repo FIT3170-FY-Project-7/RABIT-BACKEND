@@ -96,8 +96,6 @@ const splitRawDataStreamIntoParameters = async (
   selectedBuckets: boolean[]
 ) =>
   new Promise((resolve, reject) => {
-    // console.log(selectedBuckets)
-    // console.log(intrinsicParameters)
     const outstandingFunctions: (() => Promise<void>)[] = [];
     fileStream
       .pipe(replacestream(/:\s*Infinity/g,':null'))
