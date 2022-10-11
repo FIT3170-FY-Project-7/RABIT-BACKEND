@@ -48,7 +48,7 @@ const validateBody = (typeValidator: t.TypeC<any>, valueValidator?: ErrorFunctio
             validateType(req.body, typeValidator);
             
             // If we are passed the optional validator function, then use it
-            if (typeof valueValidator !== undefined) {
+            if (typeof valueValidator !== 'undefined') {
                 const err = valueValidator(req.body);
                 
                 if (err instanceof Error) {
