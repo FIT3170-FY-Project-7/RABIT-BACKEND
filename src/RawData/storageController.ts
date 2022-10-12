@@ -11,7 +11,8 @@ import stream from "node:stream";
 import replacestream from "replacestream";
 import databasePool from "../databaseConnection";
 import { INSERT_BASE_PARAMETER } from "./uploadSql";
-import parameters from "../../../sharedData/parameterBuckets.json"
+// import parameters from "../../../sharedData/parameterBuckets.json"
+import parameters from "../parameterBuckets.json"
 
 const intrinsicParameters = parameters.intrinsicParameters
 const extrinsicParameters = parameters.extrinsicParameters

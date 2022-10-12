@@ -22,7 +22,9 @@ import {
   RawDataProcess,
   RawDataChunk,
   RawDataChunkValidator,
-  FileDetails
+  FileDetails,
+  GetParameterBucketsValidator,
+  GetParameterBuckets
 } from "./RawDataInterfaces/RawDataValidators";
 import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
 import {
@@ -38,12 +40,21 @@ import {
   INSERT_UPLOAD
 } from "./uploadSql";
 import posterior_labels from "../posterior_latex_labels.json";
+import parameterBuckets from "../parameterBuckets.json"
 import { isKeyOf } from "../utils";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
 
 const router = Router();
+
+router.get(
+  "/parameter-buckets",
+  validateBody(GetParameterBucketsValidator),
+  (req: TypedRequestBody<GetParameterBuckets>, res: Response) => {
+    res.status(200).send(parameterBuckets)
+  }
+)
 
 router.post(
   "/file-ids",
