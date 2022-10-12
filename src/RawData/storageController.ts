@@ -99,33 +99,34 @@ const splitRawDataStreamIntoParameters = async (
       .pipe(replacestream(/:\s*Infinity/g,':null'))
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
-
-        if ((selectedBuckets[0] == true && intrinsicParameters.includes(data.key)) ||
-        (selectedBuckets[1] == true && extrinsicParameters.includes(data.key)) ||
-        ((selectedBuckets[2] == true && (
-            !(intrinsicParameters.includes(data.key))
-            && !(extrinsicParameters.includes(data.key))
-          ))
-        )) {
-          const saveParameter = async () => {
-            const parameterId = uuidv4();
-            const filepath = path.join(
-              process.env.DATA_PATH,
-              PROCESSED_FOLDER,
-              fileId,
-              parameterId + ".json"
-            );
-            await databasePool.query(INSERT_BASE_PARAMETER, [
-              parameterId,
-              data.key,
-              fileId
-            ]);
-            await writeFile(filepath, JSON.stringify(data.value), {
-              flag: "w+"
-            });
-          };
-          outstandingFunctions.push(saveParameter);
-        }
+        if (!isNaN(data.value[0]) || (data.value[0] as any).__complex__) {
+          if ((selectedBuckets[0] == true && intrinsicParameters.includes(data.key)) ||
+          (selectedBuckets[1] == true && extrinsicParameters.includes(data.key)) ||
+          ((selectedBuckets[2] == true && (
+              !(intrinsicParameters.includes(data.key))
+              && !(extrinsicParameters.includes(data.key))
+            ))
+          )) {
+            const saveParameter = async () => {
+              const parameterId = uuidv4();
+              const filepath = path.join(
+                process.env.DATA_PATH,
+                PROCESSED_FOLDER,
+                fileId,
+                parameterId + ".json"
+              );
+              await databasePool.query(INSERT_BASE_PARAMETER, [
+                parameterId,
+                data.key,
+                fileId
+              ]);
+              await writeFile(filepath, JSON.stringify(data.value), {
+                flag: "w+"
+              });
+            };
+            outstandingFunctions.push(saveParameter);
+          }
+      }
     
       })
       .on("error", (err: any) => reject(err))
