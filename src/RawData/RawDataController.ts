@@ -75,7 +75,10 @@ router.post(
   validateBody(RawDataProcessValidator),
   async (req: TypedRequestBody<RawDataProcess>, res: Response) => {
     const collectionId = uuidv4();
+
     const fileDetailsArray: FileDetails[] | undefined = req.body.fileDetails;
+    const selectedBuckets = req.body.selectedBuckets
+
 
     // Insert plot collection and upload
     await databaseConnection.query(INSERT_UPLOAD, [
@@ -97,13 +100,15 @@ router.post(
     );
     await Promise.all(fileInserts);
     // Don't process simultaneously to reduce load
+
     for (const fileDetails of fileDetailsArray) {
-      await processRawDataFile(fileDetails.id);
+      await processRawDataFile(fileDetails.id, selectedBuckets);
     }
 
     res
       .status(200)
       .send({ id: collectionId, fileDetailsArray: fileDetailsArray });
+
   }
 );
 
