@@ -3,6 +3,9 @@ import * as t from "io-ts";
 export const RawDataListValidator = t.type({});
 export type RawDataList = t.TypeOf<typeof RawDataListValidator>;
 
+export const GetParameterBucketsValidator = t.type({});
+export type GetParameterBuckets = t.TypeOf<typeof GetParameterBucketsValidator>;
+
 export const RawDataGetValidator = t.type({});
 export type RawDataGet = t.TypeOf<typeof RawDataGetValidator>;
 
@@ -19,7 +22,8 @@ export type FileDetails = t.TypeOf<typeof FileDetailsValidator>;
 export const RawDataProcessValidator = t.type({
   title: t.string,
   description: t.string,
-  fileDetails: t.array(FileDetailsValidator)
+  fileDetails: t.array(FileDetailsValidator),
+  selectedBuckets: t.array(t.boolean)
 });
 
 export type RawDataProcess = t.TypeOf<typeof RawDataProcessValidator>;
