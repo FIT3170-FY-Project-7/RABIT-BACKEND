@@ -3,6 +3,7 @@
 -- WARNING!
 -- Running this file will DELETE ALL EXISTING DATA if the database is already configured
 -- ==============================
+
 SET foreign_key_checks = 0;
 
 DROP TABLE IF EXISTS rabit_user;

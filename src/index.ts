@@ -18,7 +18,11 @@ if (!envConfig.parsed) {
 }
 
 // Initialise Firebase
-initFirebase();
+// NOTE: RABIT does not currently have a proper authentication system. If you want to use firebase
+// functionality, set up firebase as per firebase page on the docs.
+if (process.env.USE_FIREBASE == "1") {
+  initFirebase();
+}
 
 // Initialise express server
 let app = express();
