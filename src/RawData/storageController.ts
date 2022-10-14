@@ -99,7 +99,7 @@ const splitRawDataStreamIntoParameters = async (
       .pipe(replacestream(/:\s*Infinity|:\s*NaN/g,':null'))
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
-        if (!isNaN(data.value[0]) || (data.value[0] as any).__complex__) {
+        if (data.value[0] && (!isNaN(data.value[0]) || (data.value[0] as any).__complex__)) {
           if ((selectedBuckets[0] == true && intrinsicParameters.includes(data.key)) ||
           (selectedBuckets[1] == true && extrinsicParameters.includes(data.key)) ||
           ((selectedBuckets[2] == true && (
