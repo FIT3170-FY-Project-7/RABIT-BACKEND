@@ -11,10 +11,10 @@ import stream from "node:stream";
 import replacestream from "replacestream";
 import databasePool from "../databaseConnection";
 import { INSERT_BASE_PARAMETER } from "./uploadSql";
-import parameters from "../parameterBuckets.json"
+import parameters from "../parameterBuckets.json";
 
-const intrinsicParameters = parameters.intrinsicParameters
-const extrinsicParameters = parameters.extrinsicParameters
+const intrinsicParameters = parameters.intrinsicParameters;
+const extrinsicParameters = parameters.extrinsicParameters;
 
 const UNPROCESSED_FOLDER = "unprocessed";
 const PROCESSED_FOLDER = "processed";
@@ -87,26 +87,34 @@ const createStreamFromChunks = async (filePath: string) => {
   return fileStream;
 };
 
+export type ParameterDataType = {
+  parameterId: string;
+  key: string;
+  fileId: string;
+};
 const splitRawDataStreamIntoParameters = async (
   fileStream: stream.PassThrough,
   fileId: string,
   filePath: string,
   selectedBuckets: boolean[]
-) =>
+): Promise<ParameterDataType[]> =>
   new Promise((resolve, reject) => {
-    const outstandingFunctions: (() => Promise<void>)[] = [];
+    const outstandingFunctions: (() => Promise<ParameterDataType>)[] = [];
     fileStream
-      .pipe(replacestream(/:\s*Infinity|:\s*NaN/g,':null'))
+      .pipe(replacestream(/:\s*Infinity|:\s*NaN/g, ":null"))
       .pipe(JSONStream.parse(["posterior", "content", { emitKey: true }]))
       .on("data", async (data: { key: string; value: any[] }) => {
-        if (data.value[0] && (!isNaN(data.value[0]) || (data.value[0] as any).__complex__)) {
-          if ((selectedBuckets[0] == true && intrinsicParameters.includes(data.key)) ||
-          (selectedBuckets[1] == true && extrinsicParameters.includes(data.key)) ||
-          ((selectedBuckets[2] == true && (
-              !(intrinsicParameters.includes(data.key))
-              && !(extrinsicParameters.includes(data.key))
-            ))
-          )) {
+        if (
+          data.value[0] &&
+          (!isNaN(data.value[0]) || (data.value[0] as any).__complex__)
+        ) {
+          if (
+            (selectedBuckets[0] && intrinsicParameters.includes(data.key)) ||
+            (selectedBuckets[1] && extrinsicParameters.includes(data.key)) ||
+            (selectedBuckets[2] &&
+              !intrinsicParameters.includes(data.key) &&
+              !extrinsicParameters.includes(data.key))
+          ) {
             const saveParameter = async () => {
               const parameterId = uuidv4();
               const filepath = path.join(
@@ -115,38 +123,41 @@ const splitRawDataStreamIntoParameters = async (
                 fileId,
                 parameterId + ".json"
               );
-              await databasePool.query(INSERT_BASE_PARAMETER, [
-                parameterId,
-                data.key,
-                fileId
-              ]);
               await writeFile(filepath, JSON.stringify(data.value), {
                 flag: "w+"
               });
+              return {
+                parameterId,
+                key: data.key,
+                fileId
+              };
             };
             outstandingFunctions.push(saveParameter);
           }
-      }
-    
+        }
       })
       .on("error", (err: any) => reject(err))
       .on("end", async () => {
         console.log("Waiting for parameters");
 
-        if(outstandingFunctions.length == 0){
-          reject(new Error("No valid Parameters"))
+        if (outstandingFunctions.length == 0) {
+          reject(new Error("No valid Parameters"));
         }
 
         // Wait sequentially to avoid database from timing out
-        for (const parmeterFunction of outstandingFunctions) {
-          await parmeterFunction();
+        const parameterData: ParameterDataType[] = [];
+        for (const parameterFunction of outstandingFunctions) {
+          parameterData.push(await parameterFunction());
         }
         console.log("Finished processing", filePath);
-        resolve(undefined);
+        resolve(parameterData);
       });
   });
 
-export const processRawDataFile = async (fileId: string, selectedBuckets: boolean[]) => {
+export const processRawDataFile = async (
+  fileId: string,
+  selectedBuckets: boolean[]
+): Promise<ParameterDataType[]> => {
   const filePath = path.join(process.env.DATA_PATH, UNPROCESSED_FOLDER, fileId);
   console.log("Processing", filePath);
   await mkdir(path.join(process.env.DATA_PATH, PROCESSED_FOLDER, fileId), {
@@ -154,6 +165,12 @@ export const processRawDataFile = async (fileId: string, selectedBuckets: boolea
   });
 
   const fileStream = await createStreamFromChunks(filePath);
-  await splitRawDataStreamIntoParameters(fileStream, fileId, filePath, selectedBuckets);
+  const parameterData = await splitRawDataStreamIntoParameters(
+    fileStream,
+    fileId,
+    filePath,
+    selectedBuckets
+  );
   await rm(filePath, { recursive: true });
+  return parameterData;
 };
