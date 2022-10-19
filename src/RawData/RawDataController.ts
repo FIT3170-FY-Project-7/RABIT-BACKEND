@@ -94,13 +94,13 @@ router.post(
 
     // Process first so if there is an error, the data won't be inserted into
     // the database. Also don't process simultaneously to reduce load
-    const allParameterData: ParameterDataType[] = [];
+    let allParameterData: ParameterDataType[] = [];
     for (const fileDetails of fileDetailsArray) {
       const parameterData = await processRawDataFile(
         fileDetails.id,
         selectedBuckets
       );
-      allParameterData.concat(parameterData);
+      allParameterData = [...allParameterData, ...parameterData];
     }
 
     // Insert plot collection and upload
