@@ -146,8 +146,8 @@ const splitRawDataStreamIntoParameters = async (
 
         // Wait sequentially to avoid database from timing out
         const parameterData: ParameterDataType[] = [];
-        for (const parmeterFunction of outstandingFunctions) {
-          parameterData.push(await parmeterFunction());
+        for (const parameterFunction of outstandingFunctions) {
+          parameterData.push(await parameterFunction());
         }
         console.log("Finished processing", filePath);
         resolve(parameterData);
