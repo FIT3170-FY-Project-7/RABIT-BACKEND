@@ -28,6 +28,7 @@ import {
 } from "./RawDataInterfaces/RawDataValidators";
 import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
 import {
+  ParameterDataType,
   processRawDataFile,
   readRawDataParameter,
   upload
@@ -36,6 +37,7 @@ import {
   GET_ALL_PLOT_COLLECTIONS,
   GET_BASE_PARAMETER,
   GET_COLLECTIONS_FOR_USER,
+  INSERT_BASE_PARAMETER,
   INSERT_FILE,
   INSERT_UPLOAD
 } from "./uploadSql";
@@ -92,8 +94,13 @@ router.post(
 
     // Process first so if there is an error, the data won't be inserted into
     // the database. Also don't process simultaneously to reduce load
+    const allParameterData: ParameterDataType[] = [];
     for (const fileDetails of fileDetailsArray) {
-      await processRawDataFile(fileDetails.id, selectedBuckets);
+      const parameterData = await processRawDataFile(
+        fileDetails.id,
+        selectedBuckets
+      );
+      allParameterData.concat(parameterData);
     }
 
     // Insert plot collection and upload
@@ -105,6 +112,14 @@ router.post(
       toDBDate(new Date()),
       toDBDate(new Date())
     ]);
+    // Don't insert simultaneously to avoid too many connections
+    for (const { parameterId, key, fileId } of allParameterData) {
+      await databasePool.query(INSERT_BASE_PARAMETER, [
+        parameterId,
+        key,
+        fileId
+      ]);
+    }
 
     // Insert file pointers simultaneously
     const fileInserts = fileDetailsArray?.map((fileDetails) =>
