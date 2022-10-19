@@ -112,15 +112,6 @@ router.post(
       toDBDate(new Date()),
       toDBDate(new Date())
     ]);
-    // Don't insert simultaneously to avoid too many connections
-    for (const { parameterId, key, fileId } of allParameterData) {
-      await databasePool.query(INSERT_BASE_PARAMETER, [
-        parameterId,
-        key,
-        fileId
-      ]);
-    }
-
     // Insert file pointers simultaneously
     const fileInserts = fileDetailsArray?.map((fileDetails) =>
       databaseConnection.query(INSERT_FILE, [
@@ -130,6 +121,15 @@ router.post(
       ])
     );
     await Promise.all(fileInserts);
+
+    // Don't insert simultaneously to avoid too many connections
+    for (const { parameterId, key, fileId } of allParameterData) {
+      await databasePool.query(INSERT_BASE_PARAMETER, [
+        parameterId,
+        key,
+        fileId
+      ]);
+    }
 
     res
       .status(200)
