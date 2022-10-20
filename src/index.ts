@@ -18,7 +18,11 @@ if (!envConfig.parsed) {
 }
 
 // Initialise Firebase
-initFirebase();
+// NOTE: RABIT does not currently have a proper authentication system. If you want to use firebase
+// functionality, set up firebase as per firebase page on the docs.
+if (process.env.USE_FIREBASE == "1") {
+  initFirebase();
+}
 
 // Initialise express server
 let app = express();
@@ -33,6 +37,10 @@ app.use(router);
 // NOTE: This needs to be initialised here. Otherwise, express would just 'ignore' the handler and sends a html output
 // instead
 app.use(badRequestErrorHandler);
+
+// Disable http header that reveals this is express.
+// more info: https://www.troyhunt.com/shhh-dont-let-your-response-headers/
+app.disable('x-powered-by');
 
 const port = process.env.PORT;
 app.listen(port, () => {

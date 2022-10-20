@@ -1,83 +1,141 @@
-import { Router, Request, Response } from "express";
-import databaseConnection, {
+import { Response, Router } from "express";
+import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
+import { TypedRequestBody } from "src/TypedExpressIO";
+import { v4 as uuidv4 } from "uuid";
+import {
+  default as databaseConnection,
+  default as databasePool,
   FilePointer,
   PlotCollection,
   toDBDate,
   Upload
 } from "../databaseConnection";
-import { v4 as uuidv4 } from "uuid";
+import validateBody from "../ValidateBody";
 import {
+  RawDataGet,
+  RawDataGetValidator,
+  RawDataList,
+  RawDataListValidator,
+  RawDataFileIdsValidator,
+  RawDataProcessValidator,
+  RawDataFileIds,
+  RawDataProcess,
+  RawDataChunk,
+  RawDataChunkValidator,
+  FileDetails,
+  GetParameterBucketsValidator,
+  GetParameterBuckets
+} from "./RawDataInterfaces/RawDataValidators";
+import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
+import {
+  ParameterDataType,
   processRawDataFile,
   readRawDataParameter,
   upload
 } from "./storageController";
 import {
-  INSERT_UPLOAD,
-  INSERT_FILE,
   GET_ALL_PLOT_COLLECTIONS,
+  GET_BASE_PARAMETER,
   GET_COLLECTIONS_FOR_USER,
-  GET_BASE_PARAMETER
+  INSERT_BASE_PARAMETER,
+  INSERT_FILE,
+  INSERT_UPLOAD
 } from "./uploadSql";
-import {
-  RawDataGet,
-  RawDataGetValidator,
-  RawDataList,
-  RawDataListValidator
-} from "./RawDataInterfaces/RawDataValidators";
-import { TypedRequestBody } from "src/TypedExpressIO";
-import validateBody from "../ValidateBody";
-import { getPlotCollectionDataset } from "./RawDataServices/RawDataRepositories/RetrieveRawData";
-import databasePool from "../databaseConnection";
-import { BaseParameterRow } from "src/Plot/PlotInterfaces/GetPlotDataDTOs";
+import posterior_labels from "../posterior_latex_labels.json";
+import parameterBuckets from "../parameterBuckets.json";
+import { isKeyOf } from "../utils";
 
 // Until accounts are added, all data with be under this user
 const TEMP_USER = "temp";
 
 const router = Router();
 
-// Can't use validator as multer uses form data to submit files
-router.post("/", upload.any(), async (req: Request, res: Response) => {
-  if (!req.files || !req.body.title) {
-    res.status(400).send({
-      message: "Missing file or title parameters"
+router.get(
+  "/parameter-buckets",
+  validateBody(GetParameterBucketsValidator),
+  (req: TypedRequestBody<GetParameterBuckets>, res: Response) => {
+    res.status(200).send(parameterBuckets);
+  }
+);
+
+router.post(
+  "/file-ids",
+  validateBody(RawDataFileIdsValidator),
+  (req: TypedRequestBody<RawDataFileIds>, res: Response) => {
+    const fileIds = new Array(req.body.fileCount)
+      .fill(undefined)
+      .map(() => uuidv4());
+
+    res.status(200).send({
+      fileIds
     });
-    return;
   }
+);
 
-  const uploadId = uuidv4();
-  const collectionId = uuidv4();
-  const fileIds: string[] | undefined = Array.prototype.map.call(
-    req?.files,
-    (file: Express.Multer.File) => file.filename.split(".")[0]
-  );
-
-  // Insert plot collection and upload
-  await databaseConnection.query(INSERT_UPLOAD, [
-    uploadId,
-    TEMP_USER,
-    toDBDate(new Date()),
-    collectionId,
-    req.body.title,
-    req.body.description
-  ]);
-
-  // Insert file pointers simultaneously
-  const fileInserts = fileIds?.map((fileId) =>
-    databaseConnection.query(INSERT_FILE, [fileId, uploadId, collectionId])
-  );
-  await Promise.all(fileInserts);
-
-  res.status(200).send({ id: collectionId, fileIds });
-});
-
-router.post("/process", async (req: Request, res: Response) => {
-  // Don't process simultaneously to reduce load
-  for (const fileId of req.body.fileIds) {
-    await processRawDataFile(fileId);
+router.post(
+  "/chunk",
+  upload.single("chunk"),
+  validateBody(RawDataChunkValidator), // Validator has to be after upload
+  (req: TypedRequestBody<RawDataChunk>, res: Response) => {
+    res.status(200).send({
+      message: `File ${req.body.fileId}, chunk ${req.body.chunkCount} succesfully uploaded`
+    });
   }
+);
 
-  res.status(200).send({ fileIds: req.body.fileIds });
-});
+router.post(
+  "/process",
+  validateBody(RawDataProcessValidator),
+  async (req: TypedRequestBody<RawDataProcess>, res: Response) => {
+    const collectionId = uuidv4();
+
+    const fileDetailsArray: FileDetails[] | undefined = req.body.fileDetails;
+    const selectedBuckets = req.body.selectedBuckets;
+
+    // Process first so if there is an error, the data won't be inserted into
+    // the database. Also don't process simultaneously to reduce load
+    let allParameterData: ParameterDataType[] = [];
+    for (const fileDetails of fileDetailsArray) {
+      const parameterData = await processRawDataFile(
+        fileDetails.id,
+        selectedBuckets
+      );
+      allParameterData = [...allParameterData, ...parameterData];
+    }
+
+    // Insert plot collection and upload
+    await databaseConnection.query(INSERT_UPLOAD, [
+      collectionId,
+      TEMP_USER,
+      req.body.title,
+      req.body.description,
+      toDBDate(new Date()),
+      toDBDate(new Date())
+    ]);
+    // Insert file pointers simultaneously
+    const fileInserts = fileDetailsArray?.map((fileDetails) =>
+      databaseConnection.query(INSERT_FILE, [
+        fileDetails.id,
+        collectionId,
+        fileDetails.name
+      ])
+    );
+    await Promise.all(fileInserts);
+
+    // Don't insert simultaneously to avoid too many connections
+    for (const { parameterId, key, fileId } of allParameterData) {
+      await databasePool.query(INSERT_BASE_PARAMETER, [
+        parameterId,
+        key,
+        fileId
+      ]);
+    }
+
+    res
+      .status(200)
+      .send({ id: collectionId, fileDetailsArray: fileDetailsArray });
+  }
+);
 
 router.get(
   "/",
@@ -102,13 +160,18 @@ router.get(
       [parameterId]
     );
     const fileId = baseParameter[0].file_id;
-    const posterior = await readRawDataParameter(fileId, parameterId);
+    const posterior_data = await readRawDataParameter(fileId, parameterId);
+    const parameter_name = baseParameter[0].parameter_name;
+    const parameter_label = isKeyOf(posterior_labels, parameter_name)
+      ? posterior_labels[parameter_name]
+      : parameter_name.replace(/_/g, " ");
 
     res.status(200).send({
       fileId,
       parameterId,
-      parameterName: baseParameter[0].parameter_name,
-      posterior
+      parameterName: parameter_name,
+      parameterLabel: parameter_label,
+      posterior: posterior_data
     });
   }
 );
@@ -134,11 +197,20 @@ router.get(
 
     const title = rows[0].collection_title;
     const description = rows[0].collection_description;
-    const fileIds = [...new Set(rows.map((row) => row.file_id))];
-    const files = fileIds.map((fileId) => ({
-      fileId,
+    const fileDetailsArray = [
+      ...new Map(
+        rows.map((row) => [
+          row.file_id,
+          { file_id: row.file_id, file_name: row.file_name }
+        ])
+      ).values()
+    ];
+
+    const files = fileDetailsArray.map((fileDetails) => ({
+      fileId: fileDetails.file_id,
+      fileName: fileDetails.file_name,
       parameters: rows
-        .filter((row) => row.file_id === fileId)
+        .filter((row) => row.file_id === fileDetails.file_id)
         .map((row) => ({ id: row.parameter_id, name: row.parameter_name }))
     }));
 

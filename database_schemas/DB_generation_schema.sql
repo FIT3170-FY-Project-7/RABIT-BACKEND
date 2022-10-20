@@ -1,8 +1,9 @@
- -- Database setup file for RABIT
+-- Database setup file for RABIT
 -- ==============================
 -- WARNING!
 -- Running this file will DELETE ALL EXISTING DATA if the database is already configured
 -- ==============================
+
 SET foreign_key_checks = 0;
 
 DROP TABLE IF EXISTS rabit_user;
@@ -27,24 +28,13 @@ CREATE TABLE rabit_user
 );
 
 ALTER TABLE rabit_user
-  ADD CONSTRAINT rabit_user_pk PRIMARY KEY (user_id);
-
-CREATE TABLE upload
-
-(
-    upload_id       CHAR(36) NOT NULL,
-    user_id         CHAR(28) NOT NULL,
-    upload_datetime DATETIME
-);
-
-ALTER TABLE upload
-  ADD CONSTRAINT upload_pk PRIMARY KEY (upload_id);
+    ADD CONSTRAINT rabit_user_pk PRIMARY KEY (user_id);
 
 CREATE TABLE file_pointer
 (
-    file_id       CHAR(36) NOT NULL,
-    upload_id     CHAR(36) NOT NULL,
-    collection_id CHAR(36) NOT NULL
+    file_id       CHAR(36)     NOT NULL,
+    collection_id CHAR(36)     NOT NULL,
+    file_name     VARCHAR(512) NOT NULL
 );
 
 ALTER TABLE file_pointer
@@ -53,18 +43,21 @@ ALTER TABLE file_pointer
 CREATE TABLE plot_collection
 (
     collection_id          CHAR(36)     NOT NULL,
+    user_id                CHAR(28)     NOT NULL,
     collection_title       VARCHAR(255) NOT NULL,
-    collection_description VARCHAR(1023)
+    collection_description VARCHAR(1023),
+    last_modified          DATETIME     NOT NULL,
+    date_created           DATETIME     NOT NULL
 );
 
 ALTER TABLE plot_collection
-  ADD CONSTRAINT plot_collection_pk PRIMARY KEY (collection_id);
+    ADD CONSTRAINT plot_collection_pk PRIMARY KEY (collection_id);
 
 CREATE TABLE base_parameter
 (
-    parameter_id   CHAR(36)    NOT NULL,
+    parameter_id   CHAR(36)     NOT NULL,
     parameter_name VARCHAR(255) NOT NULL,
-    file_id        CHAR(36)    NOT NULL
+    file_id        CHAR(36)     NOT NULL
 );
 
 ALTER TABLE base_parameter
@@ -74,8 +67,8 @@ ALTER TABLE base_parameter
 CREATE TABLE corner_plot
 (
     corner_id         CHAR(36)   NOT NULL,
-    last_modified     DATETIME,
-    date_created      DATETIME,
+    last_modified     DATETIME   NOT NULL,
+    date_created      DATETIME   NOT NULL,
     collection_id     CHAR(36)   NOT NULL,
     user_id           CHAR(28)   NOT NULL,
     plot_size         NUMERIC(5) NOT NULL,
@@ -89,14 +82,15 @@ CREATE TABLE corner_plot
 );
 
 ALTER TABLE corner_plot
-  ADD CONSTRAINT corner_plot_pk PRIMARY KEY (corner_id);
+    ADD CONSTRAINT corner_plot_pk PRIMARY KEY (corner_id);
 
 CREATE TABLE parameter_config
 (
-    corner_id    CHAR(36)      NOT NULL,
-    parameter_id CHAR(36)      NOT NULL,
-    domain_max   NUMERIC(7, 3) NOT NULL,
-    domain_min   NUMERIC(7, 3) NOT NULL
+    corner_id    CHAR(36)     NOT NULL,
+    parameter_id CHAR(36)     NOT NULL,
+    domain_max   VARCHAR(64)  NOT NULL,
+    domain_min   VARCHAR(64)  NOT NULL,
+    label_text   VARCHAR(255) NOT NULL
 );
 
 ALTER TABLE parameter_config
@@ -136,13 +130,9 @@ ALTER TABLE dataset_quantile
     ADD CONSTRAINT dataset_quantile_pk PRIMARY KEY (dataconf_id, quantile_value);
 
 -- Add foreign key constraints to tables
-ALTER TABLE upload
-    ADD CONSTRAINT rabit_user_upload FOREIGN KEY (user_id) REFERENCES rabit_user (
-                                                                                  user_id) ON DELETE CASCADE;
-
-ALTER TABLE file_pointer
-    ADD CONSTRAINT upload_file_pointer FOREIGN KEY (upload_id) REFERENCES upload (
-                                                                                  upload_id) ON DELETE CASCADE;
+ALTER TABLE plot_collection
+    ADD CONSTRAINT rabit_user_plot_collection FOREIGN KEY (user_id) REFERENCES rabit_user (
+                                                                                           user_id) ON DELETE CASCADE;
 
 ALTER TABLE file_pointer
     ADD CONSTRAINT plot_collection_file_pointer FOREIGN KEY (collection_id)
